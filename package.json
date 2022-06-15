@@ -1,0 +1,23 @@
+{
+  "name": "nmvisualizer",
+  "version": "1.0.0",
+  "description": "VIsualizador de metodos numericos programados en matlab.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Proyecto-Final-LP-2022-1/NMVisualizer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Proyecto-Final-LP-2022-1/NMVisualizer/issues"
+  },
+  "homepage": "https://github.com/Proyecto-Final-LP-2022-1/NMVisualizer#readme",
+  "dependencies": {
+    "antlr4": "^4.10.1"
+  }
+}

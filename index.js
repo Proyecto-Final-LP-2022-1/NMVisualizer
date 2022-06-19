@@ -13,3 +13,4 @@ parser.buildParseTrees = true;
 var tree = parser.translation_unit();
 var visitor = new visualizerVisitor();
 visitor.visitTranslation_unit(tree);
+console.log(visitor.simbTable);

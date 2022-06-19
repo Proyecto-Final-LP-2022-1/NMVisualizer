@@ -28,6 +28,7 @@ index_expression_list
 
 array_expression
    : IDENTIFIER '(' index_expression_list ')'
+   | IDENTIFIER '(' primary_expression ')' expression
    ;
 
 unary_expression
@@ -36,17 +37,17 @@ unary_expression
    ;
 
 unary_operator
-   : '+'
-   | '-'
-   | '~'
+   : ADD_OP
+   | SUB_OP
+   | NEG_OP
    ;
 
 multiplicative_expression
    : unary_expression
-   | multiplicative_expression '*' unary_expression
-   | multiplicative_expression '/' unary_expression
+   | multiplicative_expression MUL_OP unary_expression
+   | multiplicative_expression DIV_OP unary_expression
    | multiplicative_expression '\\' unary_expression
-   | multiplicative_expression '^' unary_expression
+   | multiplicative_expression POW_OP unary_expression
    | multiplicative_expression ARRAYMUL unary_expression
    | multiplicative_expression ARRAYDIV unary_expression
    | multiplicative_expression ARRAYRDIV unary_expression
@@ -55,8 +56,8 @@ multiplicative_expression
 
 additive_expression
    : multiplicative_expression
-   | additive_expression '+' multiplicative_expression
-   | additive_expression '-' multiplicative_expression
+   | additive_expression ADD_OP multiplicative_expression
+   | additive_expression SUB_OP multiplicative_expression
    ;
 
 relational_expression
@@ -195,6 +196,10 @@ function_declare
    ;
 
 
+ADD_OP
+   : '+'
+   ;
+
 ARRAYMUL
    : '.*'
    ;
@@ -219,6 +224,9 @@ BREAK
    : 'break'
    ;
 
+DIV_OP
+   : '/'
+   ;
 
 RETURN
    : 'return'
@@ -284,11 +292,25 @@ EQ_OP
    : '=='
    ;
 
+MUL_OP
+   : '*'
+   ;
 
 NE_OP
    : '~='
    ;
 
+NEG_OP
+   : '~'
+   ;
+
+POW_OP
+   : '^'
+   ;
+
+SUB_OP
+   : '-'
+   ;
 
 TRANSPOSE
    : 'transpose'
@@ -306,7 +328,7 @@ STRING_LITERAL
 
 
 IDENTIFIER
-   : [a-zA-Z] [a-zA-Z0-9_]*
+   : [a-zA-Z@] [a-zA-Z0-9_]*
    ;
 
 

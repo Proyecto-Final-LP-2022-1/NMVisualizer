@@ -1,11 +1,13 @@
 let myFunc;
-
+var next_x = [0,0,0];
+var next_s = [0,0,0];
 var z = 75; // zoom factor in pixels
+var res = 10; // steps for anim
 
 function setup() {
   createCanvas(860, 640);
   background(20);
-  noLoop();
+  //noLoop();
 
   fetch('/func', {method: 'GET'})
     .then(function(response) {
@@ -16,6 +18,9 @@ function setup() {
       if(data) {
         // create a circle at the x, y coords
         myFunc = new Func(data.xs, data.ys, data.x, data.xi, data.xf);
+        next_x[0] = data.x;
+        next_x[1] = data.xi;
+        next_x[2] = data.xf;
         console.log(data);
         if(myFunc) myFunc.draw(z);
       }
@@ -38,9 +43,19 @@ function draw() {
   stroke(255);
   strokeWeight(1);
   line(0,height/2,width,height/2);
-  if(myFunc) myFunc.draw(z);
+  if(myFunc) {
+    myFunc.draw(z);
+    if (next_x[0] != myFunc.x) {
+      myFunc.updatex(next_s);
+    }
+  }
 }
-
+// function mouseWheel(event) {
+    
+//   // Change the zoom value according
+//   // to the scroll delta value
+//   z += event.delta;
+// }
 function mousePressed() {
 
   fetch('/func', {method: 'GET'})
@@ -50,9 +65,15 @@ function mousePressed() {
     })
     .then(function(data) {
       if(data) {
-        // create a circle at the x, y coords
-        myFunc = new Func(data.xs, data.ys, data.x, data.xi, data.xf);
-        console.log(data);
+        if (myFunc) {
+          next_x[0] = data.x;
+          next_x[1] = data.xi;
+          next_x[2] = data.xf;
+          next_s[0] = (data.x-myFunc.x)/res;
+          next_s[1] = (data.xi-myFunc.xi)/res;
+          next_s[2] = (data.xf-myFunc.xf)/res;
+          //console.log(data);
+        }
       }
       else {
         myFunc = new Func([0,1], [0,1], 0, 0, 1);
@@ -61,7 +82,7 @@ function mousePressed() {
     .catch(function(error) {
       console.log(error);
     });
-  redraw();
+  //redraw();
 }
 
 // example put request
@@ -111,6 +132,12 @@ class Func {
     this.x = x;
     this.xi = xi;
     this.xf = xf;
+  }
+
+  updatex(next_s){
+    this.x += next_s[0];
+    this.xi += next_s[1];
+    this.xf += next_s[2];
   }
 
   draw(z) {

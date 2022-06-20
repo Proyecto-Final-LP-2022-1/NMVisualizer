@@ -17,9 +17,11 @@ function setup() {
         // create a circle at the x, y coords
         myFunc = new Func(data.xs, data.ys, data.x, data.xi, data.xf);
         console.log(data);
+        if(myFunc) myFunc.draw(z);
       }
       else {
         myFunc = new Func([0,1], [0,1], 0, 0, 1);
+        if(myFunc) myFunc.draw(z);
       }
     })
     .catch(function(error) {
@@ -29,7 +31,6 @@ function setup() {
   stroke(255);
   strokeWeight(1);
   line(0,height/2,width,height/2);
-  if(myFunc) myFunc.draw(z);
 }
 
 function draw() {

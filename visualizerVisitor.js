@@ -34,7 +34,7 @@ export default class visualizerVisitor extends matlabVisitor{
         return this.visitChildren(ctx);
     }*/
 
-    visitAssignment_expression(ctx) {
+    /*visitAssignment_expression(ctx) {
         if(ctx.postfix_expression() != null && ctx.expression() != null){
             //Si es la declaracion de una variable
             if(ctx.postfix_expression().primary_expression() != null){
@@ -54,6 +54,68 @@ export default class visualizerVisitor extends matlabVisitor{
             }
         }
         //return this.visitChildren(ctx);
+    }*/
+
+    visitAssignment_expression(ctx){
+        if(ctx.postfix_expression() != null && ctx.expression() != null){
+            //console.log(ctx.postfix_expression().primary_expression().IDENTIFIER().getText());
+            //console.log(this.visitExpression(ctx.expression()));
+            this.simbTable[ctx.postfix_expression().primary_expression().IDENTIFIER().getText()] = this.visitExpression(ctx.expression());
+        }
+    }
+
+    visitExpression(ctx){
+        if(ctx.expression() == null){
+            return this.visitOr_expression(ctx.or_expression());
+        }
+    }
+
+    visitOr_expression(ctx){
+        if(ctx.or_expression() == null){
+            return this.visitAnd_expression(ctx.and_expression());
+        }else{
+            if(ctx.OR_OP() != null){
+                return this.visitOr_expression(ctx.or_expression()) || this.visitAnd_expression(ctx.and_expression());
+            }
+        }
+    }
+
+    visitAnd_expression(ctx){
+        if(ctx.and_expression() == null){
+            return this.visitEquality_expression(ctx.equality_expression());
+        }else{
+            if(ctx.AND_OP() != null){
+                return this.visitAnd_expression(ctx.and_expression()) && this.visitEquality_expression(ctx.equality_expression());
+            }
+        }
+    }
+
+    visitEquality_expression(ctx){
+        if(ctx.equality_expression() == null){
+            return this.visitRelational_expression(ctx.relational_expression());
+        }else{
+            if(ctx.EQ_OP() != null){
+                return this.visitEquality_expression(ctx.equality_expression()) == this.visitRelational_expression(ctx.relational_expression());
+            }else if(ctx.NE_OP() != null){
+                return this.visitEquality_expression(ctx.equality_expression()) != this.visitRelational_expression(ctx.relational_expression());
+            }
+        }
+    }
+
+    visitRelational_expression(ctx){
+        if(ctx.relational_expression() == null){
+            return this.visitAdditive_expression(ctx.additive_expression());
+        }else{
+            if(ctx.L_OP() != null){
+                return this.visitRelational_expression(ctx.relational_expression()) < this.visitAdditive_expression(ctx.additive_expression());
+            }else if(ctx.G_OP() != null){
+                return this.visitRelational_expression(ctx.relational_expression()) > this.visitAdditive_expression(ctx.additive_expression());
+            }else if(ctx.LE_OP() != null){
+                return this.visitRelational_expression(ctx.relational_expression()) <= this.visitAdditive_expression(ctx.additive_expression());
+            }else if(ctx.GE_OP() != null){
+                return this.visitRelational_expression(ctx.relational_expression()) >= this.visitAdditive_expression(ctx.additive_expression());
+            }
+        }
     }
 
     visitAdditive_expression(ctx){

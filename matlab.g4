@@ -62,8 +62,8 @@ additive_expression
 
 relational_expression
    : additive_expression
-   | relational_expression '<' additive_expression
-   | relational_expression '>' additive_expression
+   | relational_expression L_OP additive_expression
+   | relational_expression G_OP additive_expression
    | relational_expression LE_OP additive_expression
    | relational_expression GE_OP additive_expression
    ;
@@ -76,12 +76,12 @@ equality_expression
 
 and_expression
    : equality_expression
-   | and_expression '&' equality_expression
+   | and_expression AND_OP equality_expression
    ;
 
 or_expression
    : and_expression
-   | or_expression '|' and_expression
+   | or_expression OR_OP and_expression
    ;
 
 expression
@@ -200,6 +200,10 @@ ADD_OP
    : '+'
    ;
 
+AND_OP
+   : '&'
+   ;
+
 ARRAYMUL
    : '.*'
    ;
@@ -277,11 +281,17 @@ ELSEIF
    : 'elseif'
    ;
 
+L_OP
+   : '<'
+   ;
 
 LE_OP
    : '<='
    ;
 
+G_OP
+   : '>'
+   ;
 
 GE_OP
    : '>='
@@ -302,6 +312,10 @@ NE_OP
 
 NEG_OP
    : '~'
+   ;
+
+OR_OP
+   : '|'
    ;
 
 POW_OP

@@ -64,6 +64,16 @@ export default class visualizerVisitor extends matlabVisitor{
         }
     }
 
+    visitSelection_statement(ctx){
+        if(ctx.IF() != null && ctx.ELSE() != null && ctx.elseif_clause() == null){
+            if(this.visitExpression(ctx.expression()) == true){
+                this.visitStatement_list(ctx.statement_list(0));
+            }else{
+                this.visitStatement_list(ctx.statement_list(1));
+            }
+        }
+    }
+
     visitAssignment_expression(ctx){
         if(ctx.postfix_expression() != null && ctx.expression() != null){
             //console.log(ctx.postfix_expression().primary_expression().IDENTIFIER().getText());

@@ -1,6 +1,20 @@
-i = 1;
-acum = 0;
-while i <= 100
-  acum = acum + i;
-  i = i + 1;
+xi = 0.0;
+xf = 2.0;
+epsilon = 0.00000000000001;
+x = (xi+xf)/2;
+while(((xf-xi)^ 2) ^ 0.5 > epsilon)
+  if( ((-(xf*xf) + 2.0) > 0) & ((-(xi*xi) + 2.0) < 0))
+    if((-(x*x) + 2.0) > 0)
+      xf = x;
+    else
+      xi = x;
+    end;
+  else
+    if((-(x*x) + 2.0) < 0)
+      xf = x;
+    else
+      xi = x;
+    end;
+  end;
+  x = (xi+xf)/2;
 end;

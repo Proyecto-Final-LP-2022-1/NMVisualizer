@@ -38,8 +38,9 @@ var xf; // xf de biseccion
 var xs = []; // coordenadas x's de puntos para pintar la funcion
 var ys = []; // coordenadas y's de puntos para pintar la funcion
 var x; // punto medio, aproximacion de biseccion
-const resolution = 999; // res+1 puntos que se generan para pintar la funcion
-var start = true; // control para iniciar
+const resolution = 1000; // puntos que se generan para pintar la funcion
+
+var steps = [];
 
 console.log('Server-side code running');
 
@@ -83,22 +84,22 @@ app.put('/bisection', (req, res) => {
     console.log(visitor.simbTable);
     xs = [];
     ys = [];
-    xi = 0.0;
-    xf = 10.0;
-    // aca se define la funcion
+    xi = 0.0; // la idea es que lo asigne el visitor para el valor inicial
+    xf = 5.0;  // la idea es que lo asigne el visitor para el valor inicial    
+    // aca se define la funcion, o antes de este punto tiene que quedar declarada f(x)
     f = function(x) {
         return (-(x*x)+2);
     };
-    for (let i = xi; i<xf; i += ((xf-xi)/resolution)) {
+    for (let i = 0; i<=resolution; i++) {
         //console.log('i: '+i.toString());
-        xs.push(i);
-        ys.push(f(i));
+        var x = (i*((xf-xi)/resolution)).toFixed(3);
+        xs.push(x);
+        ys.push(f(x).toFixed(9));
     }
     res.sendStatus(200); // respond to the client indicating everything was ok
 });
 
 app.put('/bisection/reset', (req, res) => {
-    start = true;    
     res.sendStatus(200); // respond to the client indicating everything was ok
 });
 
@@ -108,18 +109,55 @@ app.get('/bisection/simbTable', (req, res) => {
 
 // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
 app.get('/bisection', (req, res) => {
-    //generando random x, xi y xf, la idea es que se calculen con el visitor del while
-    if (Math.floor(Math.random()*10)<5){
-        xf = x;
-    }else {
-        xi = x;
-    }
-    if (start) {
-        xi = 0.0;
-        xf = 10.0;
-        start = false;
-    }
+    steps.length = 0;
     x = ((xf-xi)/2)+xi;
     //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
     res.send(JSON.stringify({xs: xs, ys: ys, x: x, xi: xi, xf: xf}));
 });
+
+// respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
+app.get('/bisection/update', (req, res) => {
+    // se vuelve a hacer el proceso de biseccion
+    // pero ahora comparando el x actual de la grafica 'x'
+    // con el valor calculado por el interprete visitor.simbTable.x
+    if (x === visitor.simbTable.x) {
+        console.log('DONE');
+        console.log(steps);
+        res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: true}));
+    }else if (x < visitor.simbTable.x) {
+        xi = x;
+        steps.push('R');        
+        x = ((xf-xi)/2)+xi;
+        //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
+        res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: false}));
+    } else if (x > visitor.simbTable.x) {
+        xf = x;
+        steps.push('L');
+        x = ((xf-xi)/2)+xi;
+        //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
+        res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: false}));
+    } else {
+        console.log('weird place');
+        res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: false}));
+    }
+});
+
+// // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
+// app.get('/bisection/cutR', (req, res) => {
+//     xi = x;
+//     x = ((xf-xi)/2)+xi;
+//     steps.push('R');
+//     console.log(steps);
+//     //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
+//     res.send(JSON.stringify({x: x, xi: xi, xf: xf}));
+// });
+
+// // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
+// app.get('/bisection/cutL', (req, res) => {
+//     xf = x;
+//     x = ((xf-xi)/2)+xi;
+//     steps.push('L');
+//     console.log(steps);
+//     //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
+//     res.send(JSON.stringify({x: x, xi: xi, xf: xf}));
+// });

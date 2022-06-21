@@ -1,15 +1,20 @@
 let myFunc;
 var next_x = [0,0,0];
 var next_s = [0,0,0];
-var zx = 75; // zoom factor in pixels
-var zy = 5; // zoom factor in pixels
-var res = 10; // steps for anim
+var zx; // zoom factor in pixels
+var zy; // zoom factor in pixels
+var resolution = 10; // steps for anim
 let btn_next;
 let btn_start;
 let btn_reset;
 let txt_input;
 let code_input;
 let input;
+let done_msg;
+
+// test buttons
+// let btn_r;
+// let btn_l;
 
 var tb = [0,0,0]; // text boxes
 
@@ -19,6 +24,8 @@ function setup() {
   stroke(255);
   strokeWeight(1);
   line(0,height/2,width,height/2);
+
+  // noLoop();
 
   txt_input = createElement('textarea','');
   txt_input.attribute('name','input');
@@ -55,6 +62,14 @@ function setup() {
   btn_next.mousePressed(updateFunction);
   btn_next.hide();
 
+  // test buttons
+  // btn_r = createButton('Cut Right');
+  // btn_r.position(width*0.9, height-12*5);
+  // btn_r.mousePressed(cutRight);
+  // btn_l = createButton('Cut Left');
+  // btn_l.position(width*0.9-70, height-12*5);
+  // btn_l.mousePressed(cutLeft);
+
   btn_reset = createButton('Reset');
   btn_reset.position(20, height-12*2.5);
   btn_reset.mousePressed(resetFunc);
@@ -79,14 +94,23 @@ function setup() {
   tb[2].style("font-family", "Courier");
   tb[2].style("font-size", "12px");
   tb[0].style("color","#FFFFFF");    
-  tb[0].position(width/6, height*0.1);
-  tb[0].size(width/3, 20);
+  tb[0].position(width*0.05, height*0.1);
+  tb[0].size(width/4, 20);
   tb[1].style("color","#FFFFFF");
-  tb[1].position(3*width/6, height*0.1);
-  tb[1].size(width/3, 20);
+  tb[1].position((width/3)+(width*0.05), height*0.1);
+  tb[1].size(width/4, 20);
   tb[2].style("color","#FFFFFF");    
-  tb[2].position(5*width/6, height*0.1);
-  tb[2].size(width/3, 20);
+  tb[2].position((2*width/3)+(width*0.05), height*0.1);
+  tb[2].size(width/4, 20);
+
+  done_msg = createDiv('');
+  done_msg.style("font-family", "Courier");
+  done_msg.style("font-size", "24px");
+  done_msg.style("justify-content", "center");
+  done_msg.style("color","#00FF00");
+  done_msg.position((width/2)-75, (height*0.1)+25);
+  done_msg.size(150, 40);
+
 }
 
 function draw() {
@@ -96,20 +120,87 @@ function draw() {
   line(0,height/2,width,height/2);
   if(myFunc) {
     myFunc.draw(zx, zy);
-    tb[0].html('xi: '+myFunc.xi);
-    tb[1].html('x: '+myFunc.x);
-    tb[2].html('xf: '+myFunc.xf);
-    if (next_x[0] != myFunc.x) {
+    tb[0].html('xi: '+next_x[1]);
+    tb[1].html('x: '+next_x[0]);
+    tb[2].html('xf: '+next_x[2]);
+    if ((myFunc.x).toFixed(9) != (next_x[0]).toFixed(9)) {
       myFunc.updatex(next_s);
     }
   }
 }
+
+// function keyPressed() {
+//   //console.log(keyCode);
+//   if (keyCode === LEFT_ARROW) {
+//     //console.log('L');
+//     cutLeft();
+//   } else if (keyCode === RIGHT_ARROW) {
+//     //console.log('R');
+//     cutRight();
+//   }
+// }
 
 // function mouseWheel(event) {
     
 //   // Change the zoom value according
 //   // to the scroll delta value
 //   zy += event.delta;
+// }
+
+// function cutRight() {
+//   //console.log('Rin');
+//   fetch('/bisection/cutR', {method: 'GET'})
+//   .then(function(response) {
+//     if(response.ok) return response.json();
+//     throw new Error('Request failed.');
+//   })
+//   .then(function(data) {
+//     if(data) {
+//       if (myFunc) {
+//         next_x[0] = data.x;
+//         next_x[1] = data.xi;
+//         next_x[2] = data.xf;
+//         next_s[0] = (data.x-myFunc.x)/resolution;
+//         next_s[1] = (data.xi-myFunc.xi)/resolution;
+//         next_s[2] = (data.xf-myFunc.xf)/resolution;
+//         //console.log(data);
+//       }
+//     }
+//     else {
+//       myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
+//     }
+//   })
+//   .catch(function(error) {
+//     console.log(error);
+//   });
+// }
+
+// function cutLeft() {
+//   //console.log('Lin');
+//   fetch('/bisection/cutL', {method: 'GET'})
+//   .then(function(response) {
+//     if(response.ok) return response.json();
+//     throw new Error('Request failed.');
+//   })
+//   .then(function(data) {
+//     if(data) {
+//       if (myFunc) {
+//         next_x[0] = data.x;
+//         next_x[1] = data.xi;
+//         next_x[2] = data.xf;
+//         next_s[0] = (data.x-myFunc.x)/resolution;
+//         next_s[1] = (data.xi-myFunc.xi)/resolution;
+//         next_s[2] = (data.xf-myFunc.xf)/resolution;
+//         //console.log(data);
+//       }
+//     }
+//     else {
+//       myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
+//     }
+//   })
+//   .catch(function(error) {
+//     console.log(error);
+//   });
 // }
 
 function resetFunc(){
@@ -150,7 +241,7 @@ function resetFunc(){
 }
 
 function updateFunction() {
-  fetch('/bisection', {method: 'GET'})
+  fetch('/bisection/update', {method: 'GET'})
     .then(function(response) {
       if(response.ok) return response.json();
       throw new Error('Request failed.');
@@ -158,12 +249,16 @@ function updateFunction() {
     .then(function(data) {
       if(data) {
         if (myFunc) {
+          if(data.done) {
+            done_msg.html('DONE');            
+            btn_next.hide();
+          }
           next_x[0] = data.x;
           next_x[1] = data.xi;
           next_x[2] = data.xf;
-          next_s[0] = (data.x-myFunc.x)/res;
-          next_s[1] = (data.xi-myFunc.xi)/res;
-          next_s[2] = (data.xf-myFunc.xf)/res;
+          next_s[0] = (data.x-myFunc.x)/resolution;
+          next_s[1] = (data.xi-myFunc.xi)/resolution;
+          next_s[2] = (data.xf-myFunc.xf)/resolution;
           //console.log(data);
         }
       }
@@ -225,16 +320,12 @@ function setupFunction(){
             next_x[0] = data.x;
             next_x[1] = data.xi;
             next_x[2] = data.xf;
-            tb[0].html('xi: '+data.xi);
-            tb[1].html('x: '+data.x);
-            tb[2].html('xf: '+data.xf);
+            zx = (width*0.8/(Math.max( ...data.xs )-Math.min( ...data.xs )));
+            zy = (height*0.4/(Math.max( ...data.ys )-Math.min( ...data.ys )));
+            console.log(zx);
+            console.log(zy);
             console.log(data);
             if(myFunc) myFunc.draw(zx, zy);
-            // let asd = txt_input.value();
-            // console.log(asd);
-            // code_input.html(asd);
-            // txt_input.hide();
-            // btn_start.hide();
           }
           else {
             myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
@@ -319,7 +410,7 @@ class Bisection {
     for(var i = 0;i<this.ys.length;i++)
     {   
       cut = i;
-      vertex(this.xs[i]*zx, this.ys[i]*zy);  
+      vertex(this.xs[i]*zx, -this.ys[i]*zy);  
       if (this.xs[i]>=this.xi){
         break;        
       }      
@@ -328,8 +419,8 @@ class Bisection {
     beginShape();
     stroke(255,0,0);
     fill(255,0,0);
-    line(this.xs[cut]*zx,0,this.xs[cut]*zx,this.ys[cut]*zy);
-    ellipse(this.xs[cut]*zx, this.ys[cut]*zy, 5, 5);
+    line(this.xs[cut]*zx,0,this.xs[cut]*zx,-this.ys[cut]*zy);
+    ellipse(this.xs[cut]*zx, -this.ys[cut]*zy, 5, 5);
     noFill();    
     for(var i = cut;i<this.ys.length;i++)
     {
@@ -338,7 +429,7 @@ class Bisection {
         //console.log('break with> i: '+i.toString()+', xs[i]: '+this.xs[i].toString());
         ans = i;
       }
-      vertex(this.xs[i]*zx, this.ys[i]*zy); 
+      vertex(this.xs[i]*zx, -this.ys[i]*zy); 
       if (this.xs[i]>=this.xf){
         break;        
       }           
@@ -348,17 +439,17 @@ class Bisection {
     stroke(255);
     for(var i = cut;i<this.ys.length;i++)
     {
-      vertex(this.xs[i]*zx, this.ys[i]*zy);
+      vertex(this.xs[i]*zx, -this.ys[i]*zy);
     }
     endShape();
     stroke(255,0,0);
     fill(255,0,0);
-    line(this.xs[cut]*zx,0,this.xs[cut]*zx,this.ys[cut]*zy);
-    ellipse(this.xs[cut]*zx, this.ys[cut]*zy, 5, 5);
+    line(this.xs[cut]*zx,0,this.xs[cut]*zx,-this.ys[cut]*zy);
+    ellipse(this.xs[cut]*zx, -this.ys[cut]*zy, 5, 5);
     stroke(0,0,255);
     fill(0,0,255);
-    line(this.xs[ans]*zx,0,this.xs[ans]*zx,this.ys[ans]*zy);
-    ellipse(this.xs[ans]*zx, this.ys[ans]*zy, 5, 5);
+    line(this.xs[ans]*zx,0,this.xs[ans]*zx,-this.ys[ans]*zy);
+    ellipse(this.xs[ans]*zx, -this.ys[ans]*zy, 5, 5);
     noFill();
   }
 }

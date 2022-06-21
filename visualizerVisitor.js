@@ -195,9 +195,12 @@ export default class visualizerVisitor extends matlabVisitor{
         if(ctx.IDENTIFIER().getText() == '@' && ctx.expression() != null){
             //console.log(Function(ctx.primary_expression().getText(),"return "+ctx.expression().getText()+" ;")(2.0));
             return Function(ctx.primary_expression().getText(),"return "+ctx.expression().getText()+" ;");
-        }else if(ctx.expression() == null){
-            console.log(ctx.IDENTIFIER().getText());
-            console.log(ctx.primary_expression().getText());
+        }else if( ctx.IDENTIFIER().getText() != '@' && ctx.expression() == null){
+            if(this.simbTable[ctx.IDENTIFIER().getText()] != null){
+                return this.simbTable[ctx.IDENTIFIER().getText()](this.visitPrimary_expression(ctx.primary_expression()));
+            }else{
+                console.log("Error semantico, la funcion con nombre: \"" + ctx.IDENTIFIER().getText() + "\" no ha sido declarada.\n");
+            }
         }
     }
 

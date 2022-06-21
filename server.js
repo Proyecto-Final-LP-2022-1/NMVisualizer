@@ -32,18 +32,14 @@ var visitor;
 // idea es que estos valores se generen drante la pasada con el Visitor,
 // podria ser que genere de a un paso (como por una iteracion de while) llamando algun metodo, 
 // o que interprete todo el alg y guarde en la tabla de simbolos no solo el valor final si no un arreglo con todos los valores para determinado simbolo
-
-var xi = 0.0; // xi de biseccion
-var xf = 10.0; // xf de biseccion
+var f; // funcion a evaluar
+var xi; // xi de biseccion
+var xf; // xf de biseccion
 var xs = []; // coordenadas x's de puntos para pintar la funcion
 var ys = []; // coordenadas y's de puntos para pintar la funcion
-var x = ((xf-xi)/2)+xi; // punto medio, aproximacion de biseccion
-const res = 999; // res+1 puntos que se generan para pintar la funcion
-for (let i = xi; i<xf; i += ((xf-xi)/res)) {
-    xs.push(i);
-    ys.push(Math.sin(i));
-}
-var step = 5; // control para reiniciar biseccion despues de 6 pasos
+var x; // punto medio, aproximacion de biseccion
+const resolution = 999; // res+1 puntos que se generan para pintar la funcion
+var start = true; // control para iniciar
 
 console.log('Server-side code running');
 
@@ -73,7 +69,7 @@ app.get('/', (req, res) => {
 // });
 
 app.put('/bisection', (req, res) => {
-    console.log('Data received: ' + req.body.in);
+    console.log('Data received:\n' + req.body.in);
     input = req.body.in;
     chars = new antlr4.InputStream(input);
     lexer = new matlabLexer(chars);
@@ -83,7 +79,26 @@ app.put('/bisection', (req, res) => {
     tree = parser.translation_unit();
     visitor = new visualizerVisitor();
     visitor.visitTranslation_unit(tree);
+    console.log('Symbols table:');
     console.log(visitor.simbTable);
+    xs = [];
+    ys = [];
+    xi = 0.0;
+    xf = 10.0;
+    // aca se define la funcion
+    f = function(x) {
+        return (-(x*x)+2);
+    };
+    for (let i = xi; i<xf; i += ((xf-xi)/resolution)) {
+        //console.log('i: '+i.toString());
+        xs.push(i);
+        ys.push(f(i));
+    }
+    res.sendStatus(200); // respond to the client indicating everything was ok
+});
+
+app.put('/bisection/reset', (req, res) => {
+    start = true;    
     res.sendStatus(200); // respond to the client indicating everything was ok
 });
 
@@ -99,13 +114,12 @@ app.get('/bisection', (req, res) => {
     }else {
         xi = x;
     }
-    if (step === 5) {
-        step = 0;
+    if (start) {
         xi = 0.0;
         xf = 10.0;
+        start = false;
     }
     x = ((xf-xi)/2)+xi;
-    step ++;
     //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
     res.send(JSON.stringify({xs: xs, ys: ys, x: x, xi: xi, xf: xf}));
 });

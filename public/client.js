@@ -1,10 +1,12 @@
 let myFunc;
 var next_x = [0,0,0];
 var next_s = [0,0,0];
-var z = 75; // zoom factor in pixels
+var zx = 75; // zoom factor in pixels
+var zy = 5; // zoom factor in pixels
 var res = 10; // steps for anim
 let btn_next;
 let btn_start;
+let btn_reset;
 let txt_input;
 let code_input;
 let input;
@@ -22,7 +24,7 @@ function setup() {
   txt_input.attribute('name','input');
   txt_input.attribute('cols','50');
   txt_input.attribute('rows','10');
-  txt_input.position(width*0.05,height+(20));
+  txt_input.position(width*0.05,height-150-65);
   txt_input.value('xi = 0.0;\n'
                   +'xf = 2.0;\n'
                   +'epsilon = 0.00000000000001;\n'
@@ -51,6 +53,12 @@ function setup() {
   btn_next = createButton('Next Step');
   btn_next.position(width*0.9, height-12*2.5);
   btn_next.mousePressed(updateFunction);
+  btn_next.hide();
+
+  btn_reset = createButton('Reset');
+  btn_reset.position(20, height-12*2.5);
+  btn_reset.mousePressed(resetFunc);
+  btn_reset.hide();
 
   textSize(12);
 
@@ -59,7 +67,7 @@ function setup() {
   code_input.style("font-size", "12px");
   code_input.style("color","#FFFFFF");
   code_input.position(width*0.05,height-(220));
-  code_input.size(300, 300); 
+  code_input.size(1, 1); 
   
   tb[0] = createDiv('');
   tb[0].style("font-family", "Courier");
@@ -87,7 +95,7 @@ function draw() {
   strokeWeight(1);
   line(0,height/2,width,height/2);
   if(myFunc) {
-    myFunc.draw(z);
+    myFunc.draw(zx, zy);
     tb[0].html('xi: '+myFunc.xi);
     tb[1].html('x: '+myFunc.x);
     tb[2].html('xf: '+myFunc.xf);
@@ -96,14 +104,52 @@ function draw() {
     }
   }
 }
+
 // function mouseWheel(event) {
     
 //   // Change the zoom value according
 //   // to the scroll delta value
-//   z += event.delta;
+//   zy += event.delta;
 // }
-function updateFunction() {
 
+function resetFunc(){
+  fetch('/bisection/reset', {
+    method: 'PUT',
+    body: JSON.stringify({}),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(function(response) {
+      if(response.ok) {
+        clear();
+        myFunc = false;
+        background(20);
+        stroke(255);
+        strokeWeight(1);
+        line(0,height/2,width,height/2);
+        btn_reset.hide();
+        btn_next.hide();
+        code_input.html('');
+        code_input.size(1, 1);
+        btn_start.show();
+        txt_input.show();
+        tb[0].html('');
+        tb[1].html('');
+        tb[2].html('');        
+        console.log('Range reseted.');
+        return;
+      }
+      throw new Error('Request failed.');
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+
+}
+
+function updateFunction() {
   fetch('/bisection', {method: 'GET'})
     .then(function(response) {
       if(response.ok) return response.json();
@@ -118,7 +164,7 @@ function updateFunction() {
           next_s[0] = (data.x-myFunc.x)/res;
           next_s[1] = (data.xi-myFunc.xi)/res;
           next_s[2] = (data.xf-myFunc.xf)/res;
-          console.log(data);
+          //console.log(data);
         }
       }
       else {
@@ -128,7 +174,6 @@ function updateFunction() {
     .catch(function(error) {
       console.log(error);
     });
-  //redraw();
 }
 
 function setupFunction(){
@@ -154,13 +199,16 @@ function setupFunction(){
           if(data) {
             console.log('simbTable');
             console.log(data.table);
+            code_input.size(500, 150);
             code_input.html(JSON.stringify(data.table, null, '<br>'));
             txt_input.hide();
             btn_start.hide();
+            btn_next.show();
+            btn_reset.show();
           }
           else {
             myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
-            if(myFunc) myFunc.draw(z);
+            if(myFunc) myFunc.draw(zx, zy);
           }
         })
         .catch(function(error) {
@@ -181,7 +229,7 @@ function setupFunction(){
             tb[1].html('x: '+data.x);
             tb[2].html('xf: '+data.xf);
             console.log(data);
-            if(myFunc) myFunc.draw(z);
+            if(myFunc) myFunc.draw(zx, zy);
             // let asd = txt_input.value();
             // console.log(asd);
             // code_input.html(asd);
@@ -190,7 +238,7 @@ function setupFunction(){
           }
           else {
             myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
-            if(myFunc) myFunc.draw(z);
+            if(myFunc) myFunc.draw(zx, zy);
           }
         })
         .catch(function(error) {
@@ -261,7 +309,7 @@ class Bisection {
     this.xf += next_s[2];
   }
 
-  draw(z) {
+  draw(zx, zy) {
     stroke(255);
     noFill();
     translate(width*0.1, height/2); // put 0, 0 at center
@@ -271,7 +319,7 @@ class Bisection {
     for(var i = 0;i<this.ys.length;i++)
     {   
       cut = i;
-      vertex(this.xs[i]*z, this.ys[i]*z);  
+      vertex(this.xs[i]*zx, this.ys[i]*zy);  
       if (this.xs[i]>=this.xi){
         break;        
       }      
@@ -280,8 +328,8 @@ class Bisection {
     beginShape();
     stroke(255,0,0);
     fill(255,0,0);
-    line(this.xs[cut]*z,0,this.xs[cut]*z,this.ys[cut]*z);
-    ellipse(this.xs[cut]*z, this.ys[cut]*z, 5, 5);
+    line(this.xs[cut]*zx,0,this.xs[cut]*zx,this.ys[cut]*zy);
+    ellipse(this.xs[cut]*zx, this.ys[cut]*zy, 5, 5);
     noFill();    
     for(var i = cut;i<this.ys.length;i++)
     {
@@ -290,7 +338,7 @@ class Bisection {
         //console.log('break with> i: '+i.toString()+', xs[i]: '+this.xs[i].toString());
         ans = i;
       }
-      vertex(this.xs[i]*z, this.ys[i]*z); 
+      vertex(this.xs[i]*zx, this.ys[i]*zy); 
       if (this.xs[i]>=this.xf){
         break;        
       }           
@@ -300,17 +348,17 @@ class Bisection {
     stroke(255);
     for(var i = cut;i<this.ys.length;i++)
     {
-      vertex(this.xs[i]*z, this.ys[i]*z);
+      vertex(this.xs[i]*zx, this.ys[i]*zy);
     }
     endShape();
     stroke(255,0,0);
     fill(255,0,0);
-    line(this.xs[cut]*z,0,this.xs[cut]*z,this.ys[cut]*z);
-    ellipse(this.xs[cut]*z, this.ys[cut]*z, 5, 5);
+    line(this.xs[cut]*zx,0,this.xs[cut]*zx,this.ys[cut]*zy);
+    ellipse(this.xs[cut]*zx, this.ys[cut]*zy, 5, 5);
     stroke(0,0,255);
     fill(0,0,255);
-    line(this.xs[ans]*z,0,this.xs[ans]*z,this.ys[ans]*z);
-    ellipse(this.xs[ans]*z, this.ys[ans]*z, 5, 5);
+    line(this.xs[ans]*zx,0,this.xs[ans]*zx,this.ys[ans]*zy);
+    ellipse(this.xs[ans]*zx, this.ys[ans]*zy, 5, 5);
     noFill();
   }
 }

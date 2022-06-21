@@ -435,9 +435,6 @@ public class matlabParser extends Parser {
 
 	public static class Array_expressionContext extends ParserRuleContext {
 		public TerminalNode IDENTIFIER() { return getToken(matlabParser.IDENTIFIER, 0); }
-		public Index_expression_listContext index_expression_list() {
-			return getRuleContext(Index_expression_listContext.class,0);
-		}
 		public Primary_expressionContext primary_expression() {
 			return getRuleContext(Primary_expressionContext.class,0);
 		}
@@ -465,24 +462,24 @@ public class matlabParser extends Parser {
 				setState(113);
 				match(T__0);
 				setState(114);
-				index_expression_list(0);
+				primary_expression();
 				setState(115);
 				match(T__1);
+				setState(116);
+				expression(0);
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(117);
-				match(IDENTIFIER);
 				setState(118);
-				match(T__0);
+				match(IDENTIFIER);
 				setState(119);
-				primary_expression();
+				match(T__0);
 				setState(120);
-				match(T__1);
+				primary_expression();
 				setState(121);
-				expression(0);
+				match(T__1);
 				}
 				break;
 			}
@@ -2728,9 +2725,9 @@ public class matlabParser extends Parser {
 		"_\7*\2\2^Z\3\2\2\2^\\\3\2\2\2_b\3\2\2\2`^\3\2\2\2`a\3\2\2\2a\5\3\2\2\2"+
 		"b`\3\2\2\2cf\7\7\2\2df\5\34\17\2ec\3\2\2\2ed\3\2\2\2f\7\3\2\2\2gh\b\5"+
 		"\1\2hi\5\6\4\2io\3\2\2\2jk\f\3\2\2kl\7\b\2\2ln\5\6\4\2mj\3\2\2\2nq\3\2"+
-		"\2\2om\3\2\2\2op\3\2\2\2p\t\3\2\2\2qo\3\2\2\2rs\7,\2\2st\7\3\2\2tu\5\b"+
-		"\5\2uv\7\4\2\2v~\3\2\2\2wx\7,\2\2xy\7\3\2\2yz\5\2\2\2z{\7\4\2\2{|\5\34"+
-		"\17\2|~\3\2\2\2}r\3\2\2\2}w\3\2\2\2~\13\3\2\2\2\177\u0084\5\4\3\2\u0080"+
+		"\2\2om\3\2\2\2op\3\2\2\2p\t\3\2\2\2qo\3\2\2\2rs\7,\2\2st\7\3\2\2tu\5\2"+
+		"\2\2uv\7\4\2\2vw\5\34\17\2w~\3\2\2\2xy\7,\2\2yz\7\3\2\2z{\5\2\2\2{|\7"+
+		"\4\2\2|~\3\2\2\2}r\3\2\2\2}x\3\2\2\2~\13\3\2\2\2\177\u0084\5\4\3\2\u0080"+
 		"\u0081\5\16\b\2\u0081\u0082\5\4\3\2\u0082\u0084\3\2\2\2\u0083\177\3\2"+
 		"\2\2\u0083\u0080\3\2\2\2\u0084\r\3\2\2\2\u0085\u0086\t\2\2\2\u0086\17"+
 		"\3\2\2\2\u0087\u0088\b\t\1\2\u0088\u0089\5\f\7\2\u0089\u00a4\3\2\2\2\u008a"+

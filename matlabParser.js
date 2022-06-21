@@ -55,9 +55,9 @@ const serializedATN = [4,1,45,436,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,
 -1,0,102,103,3,4,2,0,103,109,1,0,0,0,104,105,10,1,0,0,105,106,5,6,0,0,106,
 108,3,4,2,0,107,104,1,0,0,0,108,111,1,0,0,0,109,107,1,0,0,0,109,110,1,0,
 0,0,110,7,1,0,0,0,111,109,1,0,0,0,112,113,5,42,0,0,113,114,5,1,0,0,114,115,
-3,6,3,0,115,116,5,2,0,0,116,124,1,0,0,0,117,118,5,42,0,0,118,119,5,1,0,0,
-119,120,3,0,0,0,120,121,5,2,0,0,121,122,3,26,13,0,122,124,1,0,0,0,123,112,
-1,0,0,0,123,117,1,0,0,0,124,9,1,0,0,0,125,130,3,2,1,0,126,127,3,12,6,0,127,
+3,0,0,0,115,116,5,2,0,0,116,117,3,26,13,0,117,124,1,0,0,0,118,119,5,42,0,
+0,119,120,5,1,0,0,120,121,3,0,0,0,121,122,5,2,0,0,122,124,1,0,0,0,123,112,
+1,0,0,0,123,118,1,0,0,0,124,9,1,0,0,0,125,130,3,2,1,0,126,127,3,12,6,0,127,
 128,3,2,1,0,128,130,1,0,0,0,129,125,1,0,0,0,129,126,1,0,0,0,130,11,1,0,0,
 0,131,132,7,0,0,0,132,13,1,0,0,0,133,134,6,7,-1,0,134,135,3,10,5,0,135,162,
 1,0,0,0,136,137,10,8,0,0,137,138,5,33,0,0,138,161,3,10,5,0,139,140,10,7,
@@ -651,23 +651,23 @@ export default class matlabParser extends antlr4.Parser {
 	            this.state = 113;
 	            this.match(matlabParser.T__0);
 	            this.state = 114;
-	            this.index_expression_list(0);
+	            this.primary_expression();
 	            this.state = 115;
 	            this.match(matlabParser.T__1);
+	            this.state = 116;
+	            this.expression(0);
 	            break;
 
 	        case 2:
 	            this.enterOuterAlt(localctx, 2);
-	            this.state = 117;
-	            this.match(matlabParser.IDENTIFIER);
 	            this.state = 118;
-	            this.match(matlabParser.T__0);
+	            this.match(matlabParser.IDENTIFIER);
 	            this.state = 119;
-	            this.primary_expression();
+	            this.match(matlabParser.T__0);
 	            this.state = 120;
-	            this.match(matlabParser.T__1);
+	            this.primary_expression();
 	            this.state = 121;
-	            this.expression(0);
+	            this.match(matlabParser.T__1);
 	            break;
 
 	        }
@@ -2562,10 +2562,6 @@ class Array_expressionContext extends antlr4.ParserRuleContext {
 
 	IDENTIFIER() {
 	    return this.getToken(matlabParser.IDENTIFIER, 0);
-	};
-
-	index_expression_list() {
-	    return this.getTypedRuleContext(Index_expression_listContext,0);
 	};
 
 	primary_expression() {

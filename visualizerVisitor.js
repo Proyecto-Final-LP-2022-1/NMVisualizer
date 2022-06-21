@@ -186,6 +186,18 @@ export default class visualizerVisitor extends matlabVisitor{
         if(ctx.primary_expression() != null){
             //console.log("visit_postfix_exp: "+this.visitPrimary_expression(ctx.primary_expression()));
             return this.visitPrimary_expression(ctx.primary_expression());
+        }else if(ctx.array_expression() != null){
+            return this.visitArray_expression(ctx.array_expression());
+        }
+    }
+
+    visitArray_expression(ctx){
+        if(ctx.IDENTIFIER().getText() == '@' && ctx.expression() != null){
+            //console.log(Function(ctx.primary_expression().getText(),"return "+ctx.expression().getText()+" ;")(2.0));
+            return Function(ctx.primary_expression().getText(),"return "+ctx.expression().getText()+" ;");
+        }else if(ctx.expression() == null){
+            console.log(ctx.IDENTIFIER().getText());
+            console.log(ctx.primary_expression().getText());
         }
     }
 

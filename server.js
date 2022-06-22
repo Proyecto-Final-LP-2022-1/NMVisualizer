@@ -7,17 +7,6 @@ const __dirname = path.resolve();
 import express from 'express';
 import bodyParser from 'body-parser';
 
-// var input = fs.readFileSync('input.txt','UTF-8');
-// var chars = new antlr4.InputStream(input);
-// var lexer = new matlabLexer(chars);
-// var tokens = new antlr4.CommonTokenStream(lexer);
-// var parser = new matlabParser(tokens);
-// parser.buildParseTrees = true;
-// var tree = parser.translation_unit();
-// var visitor = new visualizerVisitor();
-// visitor.visitTranslation_unit(tree);
-// console.log(visitor.simbTable);
-
 var input;
 var chars;
 var lexer;
@@ -26,17 +15,17 @@ var parser;
 var tree;
 var visitor;
 
-// para biseccion
-// idea es que estos valores se generen drante la pasada con el Visitor,
-// podria ser que genere de a un paso (como por una iteracion de while) llamando algun metodo, 
-// o que interprete todo el alg y guarde en la tabla de simbolos no solo el valor final si no un arreglo con todos los valores para determinado simbolo
-var f; // funcion a evaluar
-var xi; // xi de biseccion
+var f; // funcion interpretada de matlab
+var xi; // xi de biseccion, xi de newton
 var xf; // xf de biseccion
 var xs = []; // coordenadas x's de puntos para pintar la funcion
 var ys = []; // coordenadas y's de puntos para pintar la funcion
-var x; // punto medio, aproximacion de biseccion
+var x; // aproximacion de raiz
+var epsilon; // epsilon para ambos
+var functionTxt; // para guardar texto de funcion enviado por el cliente
 const resolution = 1000; // puntos que se generan para pintar la funcion
+var newtonPad; // padding para definir rango para pintar funcion cuando se usa newton
+
 const bisecAlg = 'x = (xi+xf)/2;\n'
                 +'while(((xf-xi)^ 2) ^ 0.5 > epsilon)\n'
                 +'  if( (f(xf) > 0) & (f(xi) < 0))\n'
@@ -54,9 +43,13 @@ const bisecAlg = 'x = (xi+xf)/2;\n'
                 +'  end;\n'
                 +'  x = (xi+xf)/2;\n'
                 +'end;'
+
+const newtonAlg = 'x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) );\n'
+                 +'while((((x-xi) ^ 2) ^ 0.5) > epsilon)\n'
+                 +'    xi = x;\n'
+                 +'    x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) );\n'
+                 +'end;'
             
-var epsilon;
-var functionTxt;
 
 var steps = [];
 
@@ -87,10 +80,30 @@ app.get('/', (req, res) => {
 //   res.sendStatus(200); // respond to the client indicating everything was ok
 // });
 
+app.put('/reset', (req, res) => {
+    console.log('Reseting');
+    epsilon = '';
+    functionTxt = '';
+    input = '';
+    chars = '';
+    lexer = '';
+    tokens = '';
+    parser = '';
+    tree = '';
+    visitor = '';
+    f = '';
+    xs = [];
+    ys = [];
+    xi = '';
+    xf = '';
+    x = '';
+    res.sendStatus(200); // respond to the client indicating everything was ok
+});
+
 app.put('/bisection', (req, res) => {
     console.log('Data received:');
     console.log(req.body);
-    epsilon = req.body.epsilon;
+    epsilon = 1*req.body.epsilon;
     functionTxt = req.body.function;
     input = 'xi_init = '+req.body.xi+';\n'
             +'xf_init = '+req.body.xf+';\n'
@@ -110,9 +123,9 @@ app.put('/bisection', (req, res) => {
     console.log(visitor.simbTable);
     xs = [];
     ys = [];
-    xi = visitor.simbTable.xi_init; 
-    xf = visitor.simbTable.xf_init;
-    const f = visitor.simbTable.f;
+    xi = 1*visitor.simbTable.xi_init; 
+    xf = 1*visitor.simbTable.xf_init;
+    f = visitor.simbTable.f;
     for (let i = 0; i<=resolution; i++) {
         //console.log('i: '+i.toString());
         var x = (i*((xf-xi)/resolution)+xi).toFixed(3);
@@ -120,17 +133,6 @@ app.put('/bisection', (req, res) => {
         ys.push(f(x).toFixed(18));
     }
     res.sendStatus(200); // respond to the client indicating everything was ok
-});
-
-app.put('/bisection/reset', (req, res) => {
-    res.sendStatus(200); // respond to the client indicating everything was ok
-});
-
-app.get('/bisection/code', (req, res) => {
-    res.send(JSON.stringify({code: 'xi = '+xi+'; '
-                                    +'xf = '+xf+'; '
-                                    +'epsilon = '+epsilon+';\n'
-                                    +'f = @(x) '+functionTxt+';\n' + bisecAlg}));
 });
 
 // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
@@ -146,44 +148,97 @@ app.get('/bisection/update', (req, res) => {
     // se vuelve a hacer el proceso de biseccion
     // pero ahora comparando el x actual de la grafica 'x'
     // con el valor calculado por el interprete visitor.simbTable.x
-    if (x === visitor.simbTable.x) {
-        console.log('DONE');
+    if (x === 1*visitor.simbTable.x) {
+        console.log('DONE IN '+steps.length+' STEPS');
         console.log(steps);
-        res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: true}));
-    }else if (x < visitor.simbTable.x) {
+        res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: true, steps: steps.length}));
+        return;
+    }else if (x < 1*visitor.simbTable.x) {
         xi = x;
         steps.push('R');        
         x = ((xf-xi)/2)+xi;
         //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
         res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: false}));
-    } else if (x > visitor.simbTable.x) {
+        return;
+    } else if (x > 1*visitor.simbTable.x) {
         xf = x;
         steps.push('L');
         x = ((xf-xi)/2)+xi;
         //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
         res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: false}));
+        return;
     } else {
         console.log('weird place');
         res.send(JSON.stringify({x: x, xi: xi, xf: xf, done: false}));
+        return;
     }
 });
 
-// // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
-// app.get('/bisection/cutR', (req, res) => {
-//     xi = x;
-//     x = ((xf-xi)/2)+xi;
-//     steps.push('R');
-//     console.log(steps);
-//     //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
-//     res.send(JSON.stringify({x: x, xi: xi, xf: xf}));
-// });
+app.get('/bisection/code', (req, res) => {
+    res.send(JSON.stringify({code: 'xi = '+xi+'; '
+                                    +'xf = '+xf+'; '
+                                    +'epsilon = '+epsilon+';\n'
+                                    +'f = @(x) '+functionTxt+';\n' + bisecAlg}));
+});
 
-// // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
-// app.get('/bisection/cutL', (req, res) => {
-//     xf = x;
-//     x = ((xf-xi)/2)+xi;
-//     steps.push('L');
-//     console.log(steps);
-//     //console.log('xi: '+xi.toString()+', x: '+x.toString()+', xf: '+xf.toString());
-//     res.send(JSON.stringify({x: x, xi: xi, xf: xf}));
-// });
+app.put('/newton', (req, res) => {
+    console.log('Data received:');
+    console.log(req.body);
+    epsilon = 1*req.body.epsilon;
+    functionTxt = req.body.function;
+    newtonPad = 1*req.body.pad;
+    input = 'xi_init = '+req.body.xi+';\n'
+            +'xi = xi_init;\n'
+            +'epsilon = '+epsilon+';\n'
+            +'f = @(x) '+functionTxt+';\n' + newtonAlg;
+    chars = new antlr4.InputStream(input);
+    lexer = new matlabLexer(chars);
+    tokens = new antlr4.CommonTokenStream(lexer);
+    parser = new matlabParser(tokens);
+    parser.buildParseTrees = true;
+    tree = parser.translation_unit();
+    visitor = new visualizerVisitor();
+    visitor.visitTranslation_unit(tree);
+    console.log('Symbols table:');
+    console.log(visitor.simbTable);
+    xs = [];
+    ys = [];
+    xi = 1*visitor.simbTable.xi_init;
+    f = visitor.simbTable.f;
+    for (let i = 0; i<=resolution; i++) {
+        //console.log('i: '+i.toString());
+        var x = (i*(((xi+newtonPad)-(xi-newtonPad))/resolution)+(xi-newtonPad)).toFixed(3);
+        xs.push(x);
+        ys.push(f(x).toFixed(18));
+    }
+    res.sendStatus(200); // respond to the client indicating everything was ok
+});
+
+app.get('/newton', (req, res) => {
+    steps.length = 0;
+    x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) ); 
+    console.log('initial xi: '+xi.toString()+', x: '+x.toString());
+    res.send(JSON.stringify({xs: xs, ys: ys, x: x, xi: xi, slope: ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon))}));
+});
+
+app.get('/newton/update', (req, res) => {
+    if (x === 1*visitor.simbTable.x) {
+        console.log('DONE IN '+steps.length+' STEPS');
+        console.log(steps);
+        res.send(JSON.stringify({x: x, xi: xi, slope : ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)), done: true, steps: steps.length}));
+        return;
+    }else {
+        xi = x;
+        x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) );
+        steps.push({x: x});
+        //console.log('xi: '+xi.toString()+', x: '+x.toString());
+        res.send(JSON.stringify({x: x, xi: xi, slope: ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)), done: false}));
+        return;
+    }
+});
+
+app.get('/newton/code', (req, res) => {
+    res.send(JSON.stringify({code: 'xi = '+xi+'; '
+                                    +'epsilon = '+epsilon+';\n'
+                                    +'f = @(x) '+functionTxt+';\n' + newtonAlg}));
+});

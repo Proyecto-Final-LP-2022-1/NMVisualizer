@@ -14,6 +14,9 @@ let xf_input;
 let epsilon_input;
 let function_input;
 let done_msg;
+let mode;
+let alg;
+let labels = ['','','',''];
 
 // test buttons
 // let btn_r;
@@ -25,47 +28,51 @@ function setup() {
   createCanvas(860, 640);
   background(20);
   // noLoop();
-
+  labels[0] = 'xi';
+  labels[1] = 'xf';
+  labels[2] = 'epsilon';
+  labels[3] = 'f(x)=';
+  
   xi_input = createElement('input','');
   xi_input.attribute('name','xi_input');
   xi_input.attribute('required','');
-  xi_input.position(width*0.05, height-215);
+  xi_input.position(width*0.05+20, height-215);
   xi_input.value('0.0');
 
   xf_input = createElement('input','');
   xf_input.attribute('name','xf_input');
   xf_input.attribute('required','');
-  xf_input.position(width*0.05, height-215+25);
+  xf_input.position(width*0.05+20, height-215+25);
   xf_input.value('2.0');
 
   epsilon_input = createElement('input','');
   epsilon_input.attribute('name','epsilon_input');
   epsilon_input.attribute('required','');
-  epsilon_input.position(width*0.05, height-215+50);
+  epsilon_input.position(width*0.05+20, height-215+50);
   epsilon_input.value('0.00000000000001');
         
   function_input = createElement('input','');
   function_input.attribute('name','function_input');
   function_input.attribute('required','');
-  function_input.position(width*0.05, height-215+75);
+  function_input.position(width*0.05+20, height-215+75);
   function_input.value('(-(x*x) + 2.0)');
 
   btn_start = createButton('Start');
-  btn_start.position(width*0.05, height-215+100);
+  btn_start.position(width*0.05+20, height-215+100);
   btn_start.mousePressed(setupFunction);
+
+  mode = createSelect();
+  mode.position((width*0.05)+20+90, height-215+100);
+  mode.option('Bisection');
+  mode.option('Newton');
+  mode.selected('Bisection');
+  alg = mode.value();
+  mode.changed(changeMode);
 
   btn_next = createButton('Next Step');
   btn_next.position(width*0.9, height-12*2.5);
   btn_next.mousePressed(updateFunction);
   btn_next.hide();
-
-  // test buttons
-  // btn_r = createButton('Cut Right');
-  // btn_r.position(width*0.9, height-12*5);
-  // btn_r.mousePressed(cutRight);
-  // btn_l = createButton('Cut Left');
-  // btn_l.position(width*0.9-70, height-12*5);
-  // btn_l.mousePressed(cutLeft);
 
   btn_reset = createButton('Reset');
   btn_reset.position(20, height-12*2.5);
@@ -73,13 +80,6 @@ function setup() {
   btn_reset.hide();
 
   textSize(12);
-
-  // code_output = createDiv('');
-  // code_output.style("font-family", "Courier");
-  // code_output.style("font-size", "12px");
-  // code_output.style("color","#FFFFFF");
-  // code_output.position(width*0.05,height-(220));
-  // code_output.size(1, 1); 
   
   tb[0] = createDiv('');
   tb[0].style("font-family", "Courier");
@@ -90,6 +90,7 @@ function setup() {
   tb[2] = createDiv('');
   tb[2].style("font-family", "Courier");
   tb[2].style("font-size", "12px");
+
   tb[0].style("color","#FFFFFF");    
   tb[0].position(width*0.05, height*0.05);
   tb[0].size(width/4, 20);
@@ -113,97 +114,53 @@ function setup() {
 function draw() {
   background(20);
   textSize(11);
-  fill('#FFFFFF');
+  fill(255);
+  noStroke();
   textFont('Courier');
   text(code_output, width*0.04,height-(290));
+  textSize(14);
+  text(labels[0], width*0.05-5, height-200);
+  text(labels[1], width*0.05-5, height-200+25);
+  text(labels[2], width*0.05-40, height-200+50);
+  text(labels[3], width*0.05-25, height-200+75);
   noFill();
   if(myFunc) {
-    myFunc.draw(zx, zy, offset);
-    tb[0].html('xi: '+next_x[1]);
-    tb[1].html('x: '+next_x[0]);
-    tb[2].html('xf: '+next_x[2]);
-    if ((myFunc.x).toFixed(9) != (next_x[0]).toFixed(9)) {
-      myFunc.updatex(next_s);
+    if (alg === 'Bisection'){
+      myFunc.draw(zx, zy, offset);
+      tb[0].html('xi: '+next_x[1]);
+      tb[1].html('x: '+next_x[0]);
+      tb[2].html('xf: '+next_x[2]);
+      if ((myFunc.x).toFixed(9) != (next_x[0]).toFixed(9)) {
+        myFunc.updatex(next_s);
+      }
+    } else {
+      myFunc.draw(zx, zy, offset);
+      tb[0].html('xi: '+next_x[1]);
+      tb[1].html('x: '+next_x[0]);
+      if ((myFunc.x).toFixed(9) != (next_x[0]).toFixed(9)) {
+        myFunc.updatex(next_s);
+      }
     }
   }
 }
 
-// function keyPressed() {
-//   //console.log(keyCode);
-//   if (keyCode === LEFT_ARROW) {
-//     //console.log('L');
-//     cutLeft();
-//   } else if (keyCode === RIGHT_ARROW) {
-//     //console.log('R');
-//     cutRight();
-//   }
-// }
-
-// function mouseWheel(event) {
-    
-//   // Change the zoom value according
-//   // to the scroll delta value
-//   zy += event.delta;
-// }
-
-// function cutRight() {
-//   //console.log('Rin');
-//   fetch('/bisection/cutR', {method: 'GET'})
-//   .then(function(response) {
-//     if(response.ok) return response.json();
-//     throw new Error('Request failed.');
-//   })
-//   .then(function(data) {
-//     if(data) {
-//       if (myFunc) {
-//         next_x[0] = data.x;
-//         next_x[1] = data.xi;
-//         next_x[2] = data.xf;
-//         next_s[0] = (data.x-myFunc.x)/resolution;
-//         next_s[1] = (data.xi-myFunc.xi)/resolution;
-//         next_s[2] = (data.xf-myFunc.xf)/resolution;
-//         //console.log(data);
-//       }
-//     }
-//     else {
-//       myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
-//     }
-//   })
-//   .catch(function(error) {
-//     console.log(error);
-//   });
-// }
-
-// function cutLeft() {
-//   //console.log('Lin');
-//   fetch('/bisection/cutL', {method: 'GET'})
-//   .then(function(response) {
-//     if(response.ok) return response.json();
-//     throw new Error('Request failed.');
-//   })
-//   .then(function(data) {
-//     if(data) {
-//       if (myFunc) {
-//         next_x[0] = data.x;
-//         next_x[1] = data.xi;
-//         next_x[2] = data.xf;
-//         next_s[0] = (data.x-myFunc.x)/resolution;
-//         next_s[1] = (data.xi-myFunc.xi)/resolution;
-//         next_s[2] = (data.xf-myFunc.xf)/resolution;
-//         //console.log(data);
-//       }
-//     }
-//     else {
-//       myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
-//     }
-//   })
-//   .catch(function(error) {
-//     console.log(error);
-//   });
-// }
+function changeMode(){  
+  alg = mode.value();
+  if (alg === 'Bisection'){
+    labels[1] = 'xf';
+    xi_input.value('0.0');
+    epsilon_input.value('0.00000000000001');
+    xf_input.value('2.0');
+  } else {
+    labels[1] = 'pad';
+    xi_input.value('2.0');
+    epsilon_input.value('0.00000000000001');
+    xf_input.value('2.0');
+  }  
+}
 
 function resetFunc(){
-  fetch('/bisection/reset', {
+  fetch('/reset', {
     method: 'PUT',
     body: JSON.stringify({}),
     headers: {
@@ -218,9 +175,16 @@ function resetFunc(){
         background(20);
         btn_reset.hide();
         btn_next.hide();
-        // code_output.html('');
-        // code_output.size(1, 1);
         code_output = '';
+        labels[0] = 'xi';
+        labels[2] = 'epsilon';
+        labels[3] = 'f(x)=';
+        if (alg === 'Bisection'){
+          labels[1] = 'xf';
+        } else {
+          labels[1] = 'pad';
+        }
+        mode.show();
         btn_start.show();
         xi_input.show();
         xf_input.show();
@@ -230,7 +194,7 @@ function resetFunc(){
         tb[0].html('');
         tb[1].html('');
         tb[2].html('');        
-        console.log('Range reseted.');
+        console.log('reseted');
         return;
       }
       throw new Error('Request failed.');
@@ -242,7 +206,8 @@ function resetFunc(){
 }
 
 function updateFunction() {
-  fetch('/bisection/update', {method: 'GET'})
+  if (alg === 'Bisection'){
+    fetch('/bisection/update', {method: 'GET'})
     .then(function(response) {
       if(response.ok) return response.json();
       throw new Error('Request failed.');
@@ -251,7 +216,7 @@ function updateFunction() {
       if(data) {
         if (myFunc) {
           if(data.done) {
-            done_msg.html('DONE');            
+            done_msg.html('DONE IN<br>'+data.steps+'<br>STEPS');            
             btn_next.hide();
           }
           next_x[0] = data.x;
@@ -270,10 +235,42 @@ function updateFunction() {
     .catch(function(error) {
       console.log(error);
     });
+  } else {
+    fetch('/newton/update', {method: 'GET'})
+    .then(function(response) {
+      if(response.ok) return response.json();
+      throw new Error('Request failed.');
+    })
+    .then(function(data) {
+      if(data) {
+        if (myFunc) {
+          if(data.done) {
+            done_msg.html('DONE IN<br>'+data.steps+'<br>STEPS');                
+            btn_next.hide();
+          }
+          console.log(data);
+          myFunc.slope = data.slope;
+          next_x[0] = data.x;
+          next_x[1] = data.xi;
+          next_s[0] = (data.x-myFunc.x)/resolution;
+          next_s[1] = (data.xi-myFunc.xi)/resolution;
+          //console.log(data);
+        }
+      }
+      else {
+        myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
+      }
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+  }
 }
 
 function setupFunction(){
-  if (isNaN(xi_input.value()) || isNaN(xf_input.value()) || isNaN(epsilon_input.value()) || function_input.value()===''
+  if (alg === 'Bisection'){
+    console.log('setting up bisection');
+    if (isNaN(xi_input.value()) || isNaN(xf_input.value()) || isNaN(epsilon_input.value()) || function_input.value()===''
     || xi_input.value()==='' || xf_input.value()==='' || epsilon_input.value()===''){
     console.log('FILL ALL OUT FIELDS,\nNumbers only for xi, xf and epsilon');
     done_msg.html('FILL ALL OUT FIELDS,\nNumbers only for xi, xf and epsilon');
@@ -300,15 +297,18 @@ function setupFunction(){
           if(data) {
             console.log('code');
             console.log(data.code);
-            // code_output.size(500, 150);
-            // code_output.html(data.code.replaceAll('\n','<BR>'));
             code_output = data.code;
+            labels[0] = '';
+            labels[1] = '';
+            labels[2] = '';
+            labels[3] = '';
             done_msg.html('');
             xi_input.hide();
             xf_input.hide();
             epsilon_input.hide();
             function_input.hide();
             btn_start.hide();
+            mode.hide();
             btn_next.show();
             btn_reset.show();
           }
@@ -334,8 +334,6 @@ function setupFunction(){
             offset = 0;
             zx = (width*0.96/(Math.max( ...data.xs )-Math.min( ...data.xs )));
             zy = (height*0.5/(Math.max( ...data.ys )-Math.min( ...data.ys )));
-            console.log(zx);
-            console.log(zy);
             console.log(data);
             if(myFunc) myFunc.draw(zx, zy, offset);
           }
@@ -355,48 +353,93 @@ function setupFunction(){
     .catch(function(error) {
       console.log(error);
     });
+  } else {
+    console.log('setting up newton');
+    if (isNaN(xi_input.value()) || isNaN(xf_input.value()) || isNaN(epsilon_input.value()) || function_input.value()===''
+    || xi_input.value()==='' || xf_input.value()==='' || epsilon_input.value()===''){
+    console.log('FILL ALL OUT FIELDS,\nNumbers only for xi, pad and epsilon');
+    done_msg.html('FILL ALL OUT FIELDS,\nNumbers only for xi, pad and epsilon');
+    return;
+  }
+  // put request, sends input values
+  fetch('/newton', {
+    method: 'PUT',
+    body: JSON.stringify({xi: xi_input.value(), pad: xf_input.value(), epsilon: epsilon_input.value(), function: function_input.value()}),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(function(response) {
+      if(response.ok) {
+        console.log('received response, requesting data');
+        fetch('/newton/code', {method: 'GET'})
+        .then(function(response) {
+          if(response.ok) return response.json();
+          throw new Error('Request failed.');
+        })
+        .then(function(data) {
+          if(data) {
+            console.log('code');
+            console.log(data.code);
+            code_output = data.code;
+            labels[0] = '';
+            labels[1] = '';
+            labels[2] = '';
+            labels[3] = '';
+            done_msg.html('');
+            xi_input.hide();
+            xf_input.hide();
+            epsilon_input.hide();
+            function_input.hide();
+            btn_start.hide();
+            mode.hide();
+            btn_next.show();
+            btn_reset.show();
+          }
+          else {
+            myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
+            if(myFunc) myFunc.draw(zx, zy, offset);
+          }
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+        fetch('/newton', {method: 'GET'})
+        .then(function(response) {
+          if(response.ok) return response.json();
+          throw new Error('Request failed.');
+        })
+        .then(function(data) {
+          if(data) {
+            myFunc = new Newton(data.xs, data.ys, data.x, data.xi, data.slope);
+            next_x[0] = data.x;
+            next_x[1] = data.xi;
+            next_x[2] = data.xf;
+            offset = 0;
+            zx = (width*0.96/(Math.max( ...data.xs )-Math.min( ...data.xs )));
+            zy = (height*0.5/(Math.max( ...data.ys )-Math.min( ...data.ys )));
+            console.log(data);
+            if(myFunc) myFunc.draw(zx, zy, offset);
+          }
+          else {
+            myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
+            if(myFunc) myFunc.draw(zx, zy, offset);
+          }
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+        console.log('input code sent to server.');
+        return;
+      }
+      throw new Error('Request failed.');
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+  }
 }
-
-// example put request
-//   fetch('/circle', {
-//     method: 'PUT',
-//     body: JSON.stringify({x: newX, y: newY}),
-//     headers: {
-//       Accept: 'application/json',
-//       'Content-Type': 'application/json'
-//     }
-//   })
-//     .then(function(response) {
-//       if(response.ok) {
-//         console.log('Coords were updated in the DB.');
-//         return;
-//       }
-//       throw new Error('Request failed.');
-//     })
-//     .catch(function(error) {
-//       console.log(error);
-//     });
-
-
-// poll the DB every 1 sec to get the stored x, y coords
-// note: this is a demo of how to retrieve data from mongodb, in a real system it might make more sense to send these updates via something like Socket.io to avoid the need for polling
-// setInterval(function() {
-//   fetch('/circle', {method: 'GET'})
-//     .then(function(response) {
-//       if(response.ok) return response.json();
-//       throw new Error('Request failed.');
-//     })
-//     .then(function(data) {
-//       myCircle.x = data.x;
-//       myCircle.y = data.y;
-//     })
-//     .catch(function(error) {
-//       console.log(error);
-//     });
-// }, 1000);
-
-
-
 class Bisection {
   constructor(xs, ys, x, xi, xf) {
     this.xs = xs;
@@ -416,7 +459,7 @@ class Bisection {
     stroke(0,255,0);
     line(0,(height/2)+offset,width,(height/2)+offset);
     translate(width*0.02, (height/2)+offset);
-    line(-1*xi_input.value()*zx,-height,-1*xi_input.value()*zx,height);
+    line(-1*this.xs[0]*zx,-height,-1*this.xs[0]*zx,height);
     noFill();
     var cut = 0;
     var ans;
@@ -425,7 +468,7 @@ class Bisection {
     for(var i = 0;i<this.ys.length;i++)
     {   
       cut = i;
-      vertex((this.xs[i]-(1*xi_input.value()))*zx, -this.ys[i]*zy);  
+      vertex((this.xs[i]-(1*this.xs[0]))*zx, -this.ys[i]*zy);  
       if (this.xs[i]>=this.xi){
         break;        
       }      
@@ -434,8 +477,8 @@ class Bisection {
     beginShape();
     stroke(255,0,0);
     fill(255,0,0);
-    line((this.xs[cut]-(1*xi_input.value()))*zx,0,(this.xs[cut]-(1*xi_input.value()))*zx,-this.ys[cut]*zy);
-    ellipse((this.xs[cut]-(1*xi_input.value()))*zx, -this.ys[cut]*zy, 5, 5);
+    line((this.xs[cut]-(1*this.xs[0]))*zx,0,(this.xs[cut]-(1*this.xs[0]))*zx,-this.ys[cut]*zy);
+    ellipse((this.xs[cut]-(1*this.xs[0]))*zx, -this.ys[cut]*zy, 5, 5);
     noFill();    
     for(var i = cut;i<this.ys.length;i++)
     {
@@ -444,7 +487,7 @@ class Bisection {
         //console.log('break with> i: '+i.toString()+', xs[i]: '+this.xs[i].toString());
         ans = i;
       }
-      vertex((this.xs[i]-(1*xi_input.value()))*zx, -this.ys[i]*zy); 
+      vertex((this.xs[i]-(1*this.xs[0]))*zx, -this.ys[i]*zy); 
       if (this.xs[i]>=this.xf){
         break;        
       }           
@@ -454,17 +497,58 @@ class Bisection {
     stroke(255);
     for(var i = cut;i<this.ys.length;i++)
     {
-      vertex((this.xs[i]-(1*xi_input.value()))*zx, -this.ys[i]*zy);
+      vertex((this.xs[i]-(1*this.xs[0]))*zx, -this.ys[i]*zy);
     }
     endShape();
     stroke(255,0,0);
     fill(255,0,0);
-    line((this.xs[cut]-(1*xi_input.value()))*zx,0,(this.xs[cut]-(1*xi_input.value()))*zx,-this.ys[cut]*zy);
-    ellipse((this.xs[cut]-(1*xi_input.value()))*zx, -this.ys[cut]*zy, 5, 5);
+    line((this.xs[cut]-(1*this.xs[0]))*zx,0,(this.xs[cut]-(1*this.xs[0]))*zx,-this.ys[cut]*zy);
+    ellipse((this.xs[cut]-(1*this.xs[0]))*zx, -this.ys[cut]*zy, 5, 5);
     stroke(0,0,255);
     fill(0,0,255);
-    line((this.xs[ans]-(1*xi_input.value()))*zx,0,(this.xs[ans]-(1*xi_input.value()))*zx,-this.ys[ans]*zy);
-    ellipse((this.xs[ans]-(1*xi_input.value()))*zx, -this.ys[ans]*zy, 5, 5);
+    line((this.xs[ans]-(1*this.xs[0]))*zx,0,(this.xs[ans]-(1*this.xs[0]))*zx,-this.ys[ans]*zy);
+    ellipse((this.xs[ans]-(1*this.xs[0]))*zx, -this.ys[ans]*zy, 5, 5);
     noFill();
+  }
+}
+
+class Newton {
+  constructor(xs, ys, x, xi, slope) {
+    this.xs = xs;
+    this.ys = ys;
+    this.x = x;
+    this.xi = xi;
+    this.slope = slope
+  }
+
+  updatex(next_s){
+    this.x += next_s[0];
+    this.xi += next_s[1];
+  }
+
+  draw(zx, zy, offset) {
+    stroke(0,255,0);
+    line(0,(height/2)+offset,width,(height/2)+offset);
+    translate(width*0.02, (height/2)+offset);
+    line(-1*this.xs[0]*zx,-height,-1*this.xs[0]*zx,height);
+    noFill();
+    var ans;    
+    stroke(255,0,0);
+    beginShape();
+    for(var i = 0;i<this.ys.length;i++)
+    {
+      vertex((this.xs[i]-(1*this.xs[0]))*zx, -this.ys[i]*zy);     
+    }
+    endShape();
+    stroke(0,0,255);
+    line(((this.x-(1*this.xs[0]))+((height)/(2*this.slope)))*zx,-(height/2)*zy,((this.x-(1*this.xs[0]))+((-height)/(2*this.slope)))*zx,(height/2)*zy);
+    fill(255,0,0);
+    stroke(255,0,0);
+    ellipse((this.xi-(1*this.xs[0]))*zx, -(((this.xi-(1*this.xs[0]))-(this.x-(1*this.xs[0])))*this.slope)*zy, 5, 5);
+    fill(0,0,255);
+    stroke(0,0,255);
+    ellipse((this.x-(1*this.xs[0]))*zx, 0, 5, 5);
+    noStroke();
+    noFill();    
   }
 }

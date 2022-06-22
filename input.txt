@@ -1,8 +1,9 @@
-xi = 2.0;
-eps = 0.00001;
-f = @(x) x*x - 2.0;
-xf = xi - ( f(xi) / ((f(xi + eps)- f(xi - eps))/(2*eps)) );
-while((((xf-xi) ^ 2) ^ 0.5) > eps)
-    xi = xf;
-    xf = xi - ( f(xi) / ((f(xi + eps)- f(xi - eps))/(2*eps)) );
+xi_init = 2.0;
+xi = xi_init;
+epsilon = 0.00001;
+f = @(x) -(x*x) + 2.0;
+x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) );
+while((((x-xi) ^ 2) ^ 0.5) > epsilon)
+    xi = x;
+    x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) );
 end;

@@ -54,9 +54,6 @@ const newtonAlg = 'slope = ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon));\n'
                  +'    x = xi - ( f(xi) / (slope) );\n'
                  +'end;'
             
-
-var steps = [];
-
 console.log('Server-side code running');
 
 
@@ -86,7 +83,6 @@ app.get('/', (req, res) => {
 
 app.put('/reset', (req, res) => {
     console.log('Reseting');
-    steps.length = 0;
     step = 0;
     xi_step = 0;
     xf_step = 0;
@@ -142,28 +138,43 @@ app.put('/bisection', (req, res) => {
 
 // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
 app.get('/bisection', (req, res) => {
-    steps.length = 0;
     step = 0;
     xi_step = 0;
     xf_step = 0;
     //console.log('xi: '+visitor.simbTable.xi[xi_step].toString()+', x: '+visitor.simbTable.x[step].toString()+', xf: '+visitor.simbTable.xf[xf_step].toString());
-    res.send(JSON.stringify({xs: xs, ys: ys, x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[xi_step], xf: visitor.simbTable.xf[xf_step]}));
+    res.send(JSON.stringify({xs: xs, ys: ys, x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[xi_step], xf: visitor.simbTable.xf[xf_step], done: false}));
 });
 
 // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf
-app.get('/bisection/update', (req, res) => {
+app.get('/bisection/update/next', (req, res) => {
     if (1*step === 1*visitor.simbTable.x.length-1) {
         console.log('DONE IN '+(step+2).toString()+' STEPS');
-        console.log(steps);
         res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[xi_step], xf: visitor.simbTable.xf[xf_step], done: true, steps: step+2}));
         return;
     }else {
         step++;
-        steps.push({x: visitor.simbTable.x[step]});
         if (visitor.simbTable.x[step-1] === visitor.simbTable.xf[xf_step+1]){
             xf_step++;
         } else if (visitor.simbTable.x[step-1] === visitor.simbTable.xi[xi_step+1]){
             xi_step++;
+        }
+        //console.log('xi: '+visitor.simbTable.xi[xi_step].toString()+', x: '+visitor.simbTable.x[step].toString()+', xf: '+visitor.simbTable.xf[xf_step].toString());
+        res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[xi_step], xf: visitor.simbTable.xf[xf_step], done: false}));
+        return;
+    }
+});
+
+app.get('/bisection/update/prev', (req, res) => {
+    if (1*step === 0) {
+        console.log('BACK AT START');
+        res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[xi_step], xf: visitor.simbTable.xf[xf_step], done: true, steps: step+2}));
+        return;
+    }else {
+        step--;
+        if (visitor.simbTable.x[step] === visitor.simbTable.xf[xf_step]){
+            xf_step--;
+        } else if (visitor.simbTable.x[step] === visitor.simbTable.xi[xi_step]){
+            xi_step--;
         }
         //console.log('xi: '+visitor.simbTable.xi[xi_step].toString()+', x: '+visitor.simbTable.x[step].toString()+', xf: '+visitor.simbTable.xf[xf_step].toString());
         res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[xi_step], xf: visitor.simbTable.xf[xf_step], done: false}));
@@ -208,21 +219,31 @@ app.put('/newton', (req, res) => {
 });
 
 app.get('/newton', (req, res) => {
-    steps.length = 0;
     step = 0;
     //console.log('initial xi: '+visitor.simbTable.xi[step].toString()+', x: '+visitor.simbTable.x[step].toString()+', slope: '+visitor.simbTable.slope[step].toString());
-    res.send(JSON.stringify({xs: xs, ys: ys, x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[step], slope: visitor.simbTable.slope[step]}));
+    res.send(JSON.stringify({xs: xs, ys: ys, x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[step], slope: visitor.simbTable.slope[step], done: false}));
 });
 
-app.get('/newton/update', (req, res) => {
+app.get('/newton/update/next', (req, res) => {
     if (1*step === 1*visitor.simbTable.x.length-1) {
         console.log('DONE IN '+(step+2).toString()+' STEPS');
-        console.log(steps);
         res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[step], slope: visitor.simbTable.slope[step], done: true, steps: step+2}));
         return;
     }else {
         step++;
-        steps.push({x: visitor.simbTable.x[step]});
+        //console.log('xi: '+xi.toString()+', x: '+x.toString());
+        res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[step], slope: visitor.simbTable.slope[step], done: false}));
+        return;
+    }
+});
+
+app.get('/newton/update/prev', (req, res) => {    
+    if (1*step === 0) {
+        console.log('BACK AT START');
+        res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[step], slope: visitor.simbTable.slope[step], done: true}));
+        return;
+    }else { 
+        step--;
         //console.log('xi: '+xi.toString()+', x: '+x.toString());
         res.send(JSON.stringify({x: visitor.simbTable.x[step], xi: visitor.simbTable.xi[step], slope: visitor.simbTable.slope[step], done: false}));
         return;

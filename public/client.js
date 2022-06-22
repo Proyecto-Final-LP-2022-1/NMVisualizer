@@ -6,6 +6,7 @@ var zy; // zoom factor in pixels
 var offset; 
 var resolution = 10; // steps for anim
 let btn_next;
+let btn_prev;
 let btn_start;
 let btn_reset;
 let code_output = '';
@@ -71,8 +72,13 @@ function setup() {
 
   btn_next = createButton('Next Step');
   btn_next.position(width*0.9, height-12*2.5);
-  btn_next.mousePressed(updateFunction);
+  btn_next.mousePressed(updateFunctionNext);
   btn_next.hide();
+
+  btn_prev = createButton('Prev Step');
+  btn_prev.position(width*0.9-77, height-12*2.5);
+  btn_prev.mousePressed(updateFunctionPrev);
+  btn_prev.hide();
 
   btn_reset = createButton('Reset');
   btn_reset.position(20, height-12*2.5);
@@ -126,6 +132,17 @@ function draw() {
   noFill();
   if(myFunc) {
     if (alg === 'Bisection'){
+      fill(255,0,0);
+      stroke(255,0,0);
+      ellipse((width*0.05)-5, (height*0.05)+7, 5, 5);
+      ellipse((2*width/3)+(width*0.05)-5, (height*0.05)+7, 5, 5);
+      noStroke();
+      noFill();
+      fill(0,0,255);
+      stroke(0,0,255);
+      ellipse((width/3)+(width*0.05)-5, (height*0.05)+7, 5, 5);
+      noStroke();
+      noFill();
       myFunc.draw(zx, zy, offset);
       tb[0].html('xi: '+next_x[1]);
       tb[1].html('x: '+next_x[0]);
@@ -133,7 +150,17 @@ function draw() {
       if ((myFunc.x).toFixed(9) != (next_x[0]).toFixed(9)) {
         myFunc.updatex(next_s);
       }
-    } else {
+    } else {      
+      fill(255,0,0);
+      stroke(255,0,0);
+      ellipse((width*0.05)-5, (height*0.05)+7, 5, 5);
+      noStroke();
+      noFill();
+      fill(0,0,255);
+      stroke(0,0,255);
+      ellipse((width/3)+(width*0.05)-5, (height*0.05)+7, 5, 5);
+      noStroke();
+      noFill();
       myFunc.draw(zx, zy, offset);
       tb[0].html('xi: '+next_x[1]);
       tb[1].html('x: '+next_x[0]);
@@ -175,6 +202,7 @@ function resetFunc(){
         background(20);
         btn_reset.hide();
         btn_next.hide();
+        btn_prev.hide();
         code_output = '';
         labels[0] = 'xi';
         labels[2] = 'epsilon';
@@ -205,9 +233,9 @@ function resetFunc(){
 
 }
 
-function updateFunction() {
+function updateFunctionNext() {
   if (alg === 'Bisection'){
-    fetch('/bisection/update', {method: 'GET'})
+    fetch('/bisection/update/next', {method: 'GET'})
     .then(function(response) {
       if(response.ok) return response.json();
       throw new Error('Request failed.');
@@ -216,9 +244,14 @@ function updateFunction() {
       if(data) {
         if (myFunc) {
           if(data.done) {
-            done_msg.html('DONE IN<br>'+data.steps+'<br>STEPS');            
+            done_msg.html('DONE IN<br>'+data.steps+'<br>STEPS');                
             btn_next.hide();
-          }
+            btn_prev.show();
+          } else {
+            done_msg.html('');                
+            btn_next.show();
+            btn_prev.show();
+          }  
           next_x[0] = 1*data.x;
           next_x[1] = 1*data.xi;
           next_x[2] = 1*data.xf;
@@ -236,7 +269,7 @@ function updateFunction() {
       console.log(error);
     });
   } else {
-    fetch('/newton/update', {method: 'GET'})
+    fetch('/newton/update/next', {method: 'GET'})
     .then(function(response) {
       if(response.ok) return response.json();
       throw new Error('Request failed.');
@@ -247,8 +280,83 @@ function updateFunction() {
           if(data.done) {
             done_msg.html('DONE IN<br>'+data.steps+'<br>STEPS');                
             btn_next.hide();
-          }
-          console.log(data);
+            btn_prev.show();
+          } else {
+            done_msg.html('');                
+            btn_next.show();
+            btn_prev.show();
+          }          
+          myFunc.slope = 1*data.slope;
+          next_x[0] = 1*data.x;
+          next_x[1] = 1*data.xi;
+          next_s[0] = (1*data.x-myFunc.x)/resolution;
+          next_s[1] = (1*data.xi-myFunc.xi)/resolution;
+          //console.log(data);
+        }
+      }
+      else {
+        myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
+      }
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+  }
+}
+
+function updateFunctionPrev() {
+  if (alg === 'Bisection'){
+    fetch('/bisection/update/prev', {method: 'GET'})
+    .then(function(response) {
+      if(response.ok) return response.json();
+      throw new Error('Request failed.');
+    })
+    .then(function(data) {
+      if(data) {
+        if (myFunc) {
+          if(data.done) {
+            done_msg.html('BACK AT START');
+            btn_next.show();
+            btn_prev.hide();
+          }else{
+            done_msg.html('');
+            btn_prev.show();
+            btn_next.show();
+          }  
+          next_x[0] = 1*data.x;
+          next_x[1] = 1*data.xi;
+          next_x[2] = 1*data.xf;
+          next_s[0] = (1*data.x-myFunc.x)/resolution;
+          next_s[1] = (1*data.xi-myFunc.xi)/resolution;
+          next_s[2] = (1*data.xf-myFunc.xf)/resolution;
+          //console.log(data);
+        }
+      }
+      else {
+        myFunc = new Bisection([0,1], [0,1], 0, 0, 1);
+      }
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+  } else {
+    fetch('/newton/update/prev', {method: 'GET'})
+    .then(function(response) {
+      if(response.ok) return response.json();
+      throw new Error('Request failed.');
+    })
+    .then(function(data) {
+      if(data) {
+        if (myFunc) {
+          if(data.done) {
+            done_msg.html('BACK AT START');
+            btn_next.show();
+            btn_prev.hide();
+          }else{
+            done_msg.html('');
+            btn_prev.show();
+            btn_next.show();
+          }                   
           myFunc.slope = 1*data.slope;
           next_x[0] = 1*data.x;
           next_x[1] = 1*data.xi;
@@ -310,6 +418,7 @@ function setupFunction(){
             btn_start.hide();
             mode.hide();
             btn_next.show();
+            btn_prev.hide();
             btn_reset.show();
           }
           else {
@@ -395,6 +504,7 @@ function setupFunction(){
             btn_start.hide();
             mode.hide();
             btn_next.show();
+            btn_prev.hide();
             btn_reset.show();
           }
           else {
@@ -549,6 +659,6 @@ class Newton {
     stroke(0,0,255);
     ellipse((this.x-(1*this.xs[0]))*zx, 0, 5, 5);
     noStroke();
-    noFill();    
+    noFill();
   }
 }

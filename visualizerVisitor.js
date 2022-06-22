@@ -203,6 +203,12 @@ export default class visualizerVisitor extends matlabVisitor{
             }else{
                 console.log("Error semantico, la funcion con nombre: \"" + ctx.IDENTIFIER().getText() + "\" no ha sido declarada.\n");
             }
+        }else if(ctx.IDENTIFIER().getText() != '@' && ctx.expression() != null && ctx.primary_expression() == null){
+            if(this.simbTable[ctx.IDENTIFIER().getText()] != null){
+                return this.simbTable[ctx.IDENTIFIER().getText()](this.visitExpression(ctx.expression()));
+            }else{
+                console.log("Error semantico, la funcion con nombre: \"" + ctx.IDENTIFIER().getText() + "\" no ha sido declarada.\n");
+            }
         }
     }
 

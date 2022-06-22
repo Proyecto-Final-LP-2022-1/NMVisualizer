@@ -1,9 +1,7 @@
-import fs from 'fs';
 import antlr4 from 'antlr4';
 import matlabLexer from './matlabLexer.js';
 import matlabParser from './matlabParser.js';
 import visualizerVisitor from './visualizerVisitor.js';
-import http from 'http';
 import path from 'path';
 const __dirname = path.resolve();
 import express from 'express';
@@ -56,6 +54,9 @@ const bisecAlg = 'x = (xi+xf)/2;\n'
                 +'  end;\n'
                 +'  x = (xi+xf)/2;\n'
                 +'end;'
+            
+var epsilon;
+var functionTxt;
 
 var steps = [];
 
@@ -87,8 +88,16 @@ app.get('/', (req, res) => {
 // });
 
 app.put('/bisection', (req, res) => {
-    console.log('Data received:\n' + req.body.in);
-    input = req.body.in + bisecAlg;
+    console.log('Data received:');
+    console.log(req.body);
+    epsilon = req.body.epsilon;
+    functionTxt = req.body.function;
+    input = 'xi_init = '+req.body.xi+';\n'
+            +'xf_init = '+req.body.xf+';\n'
+            +'xi = xi_init;\n'
+            +'xf = xf_init;\n'
+            +'epsilon = '+epsilon+';\n'
+            +'f = @(x) '+functionTxt+';\n' + bisecAlg;
     chars = new antlr4.InputStream(input);
     lexer = new matlabLexer(chars);
     tokens = new antlr4.CommonTokenStream(lexer);
@@ -106,7 +115,7 @@ app.put('/bisection', (req, res) => {
     const f = visitor.simbTable.f;
     for (let i = 0; i<=resolution; i++) {
         //console.log('i: '+i.toString());
-        var x = (i*((xf-xi)/resolution)).toFixed(3);
+        var x = (i*((xf-xi)/resolution)+xi).toFixed(3);
         xs.push(x);
         ys.push(f(x).toFixed(18));
     }
@@ -117,8 +126,11 @@ app.put('/bisection/reset', (req, res) => {
     res.sendStatus(200); // respond to the client indicating everything was ok
 });
 
-app.get('/bisection/simbTable', (req, res) => {
-    res.send(JSON.stringify({table: visitor.simbTable}));
+app.get('/bisection/code', (req, res) => {
+    res.send(JSON.stringify({code: 'xi = '+xi+'; '
+                                    +'xf = '+xf+'; '
+                                    +'epsilon = '+epsilon+';\n'
+                                    +'f = @(x) '+functionTxt+';\n' + bisecAlg}));
 });
 
 // respond to GET requests with xs and ys (coords of points from function), x mid point on interval from xi to xf

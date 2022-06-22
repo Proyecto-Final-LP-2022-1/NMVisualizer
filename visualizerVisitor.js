@@ -201,7 +201,13 @@ export default class visualizerVisitor extends matlabVisitor{
     visitArray_expression(ctx){
         if(ctx.IDENTIFIER().getText() == '@' && ctx.expression() != null){
             //console.log(Function(ctx.primary_expression().getText(),"return "+ctx.expression().getText()+" ;")(2.0));
-            return Function(ctx.primary_expression().getText(),"return "+ctx.expression().getText()+" ;");
+            var expression = ctx.expression().getText();
+            expression = expression.replaceAll(/sin/ig, 'Math.sin');
+            expression = expression.replaceAll(/cos/ig, 'Math.cos');
+            expression = expression.replaceAll(/tan/ig, 'Math.tan');
+            expression = expression.replaceAll(/exp/ig, 'Math.exp');
+            //console.log("EXPRESION: "+ expression);
+            return Function(ctx.primary_expression().getText(),"return "+expression+" ;");
         }else if(ctx.IDENTIFIER().getText() == '@' && ctx.array_expression() != null){
             return Function(ctx.primary_expression().getText(), "return Math."+ctx.array_expression().IDENTIFIER().getText()+"("+ctx.array_expression().primary_expression().getText()+") ;");
         }else if( ctx.IDENTIFIER().getText() != '@' && ctx.expression() == null){

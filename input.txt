@@ -1,5 +1,7 @@
-xi = 0.0;
-xf = 2.0;
+xi_init = 0.0;
+xf_init = 2.0;
+xi = xi_init;
+xf = xf_init;
 epsilon = 0.00000000000001;
 f = @(x) (-(x*x) + 2.0);
 x = (xi+xf)/2;

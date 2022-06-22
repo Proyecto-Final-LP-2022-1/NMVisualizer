@@ -84,12 +84,9 @@ app.put('/bisection', (req, res) => {
     console.log(visitor.simbTable);
     xs = [];
     ys = [];
-    xi = 0.0; // la idea es que lo asigne el visitor para el valor inicial
-    xf = 5.0;  // la idea es que lo asigne el visitor para el valor inicial    
-    // aca se define la funcion, o antes de este punto tiene que quedar declarada f(x)
-    f = function(x) {
-        return (-(x*x)+2);
-    };
+    xi = visitor.simbTable.xi_init; 
+    xf = visitor.simbTable.xf_init;
+    const f = visitor.simbTable.f;
     for (let i = 0; i<=resolution; i++) {
         //console.log('i: '+i.toString());
         var x = (i*((xf-xi)/resolution)).toFixed(3);

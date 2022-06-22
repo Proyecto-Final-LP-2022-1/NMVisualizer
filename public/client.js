@@ -32,19 +32,22 @@ function setup() {
   txt_input.attribute('cols','50');
   txt_input.attribute('rows','10');
   txt_input.position(width*0.05,height-150-65);
-  txt_input.value('xi = 0.0;\n'
-                  +'xf = 2.0;\n'
+  txt_input.value('xi_init = 0.0;\n'
+                  +'xf_init = 2.0;\n'
+                  +'xi = xi_init;\n'
+                  +'xf = xf_init;\n'
                   +'epsilon = 0.00000000000001;\n'
+                  +'f = @(x) (-(x*x) + 2.0);\n'
                   +'x = (xi+xf)/2;\n'
                   +'while(((xf-xi)^ 2) ^ 0.5 > epsilon)\n'
-                  +'  if( ((-(xf*xf) + 2.0) > 0) & ((-(xi*xi) + 2.0) < 0))\n'
-                  +'    if((-(x*x) + 2.0) > 0)\n'
+                  +'  if( (f(xf) > 0) & (f(xi) < 0))\n'
+                  +'    if(f(x) > 0)\n'
                   +'      xf = x;\n'
                   +'    else\n'
                   +'      xi = x;\n'
                   +'    end;\n'
                   +'  else\n'
-                  +'    if((-(x*x) + 2.0) < 0)\n'
+                  +'    if(f(x) < 0)\n'
                   +'      xf = x;\n'
                   +'    else\n'
                   +'      xi = x;\n'
@@ -226,6 +229,7 @@ function resetFunc(){
         code_input.size(1, 1);
         btn_start.show();
         txt_input.show();
+        done_msg.html(''); 
         tb[0].html('');
         tb[1].html('');
         tb[2].html('');        

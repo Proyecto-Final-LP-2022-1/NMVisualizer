@@ -1,9 +1,10 @@
-xi_init = 2.0;
-xi = xi_init;
+xi = 2.0;
 epsilon = 0.00001;
 f = @(x) -(x*x) + 2.0;
-x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) );
+slope = ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon));
+x = xi - ( f(xi) / (slope) );
 while((((x-xi) ^ 2) ^ 0.5) > epsilon)
     xi = x;
-    x = xi - ( f(xi) / ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon)) );
+    slope = ((f(xi + epsilon)- f(xi - epsilon))/(2*epsilon));
+    x = xi - ( f(xi) / (slope) );
 end;

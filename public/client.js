@@ -219,12 +219,12 @@ function updateFunction() {
             done_msg.html('DONE IN<br>'+data.steps+'<br>STEPS');            
             btn_next.hide();
           }
-          next_x[0] = data.x;
-          next_x[1] = data.xi;
-          next_x[2] = data.xf;
-          next_s[0] = (data.x-myFunc.x)/resolution;
-          next_s[1] = (data.xi-myFunc.xi)/resolution;
-          next_s[2] = (data.xf-myFunc.xf)/resolution;
+          next_x[0] = 1*data.x;
+          next_x[1] = 1*data.xi;
+          next_x[2] = 1*data.xf;
+          next_s[0] = (1*data.x-myFunc.x)/resolution;
+          next_s[1] = (1*data.xi-myFunc.xi)/resolution;
+          next_s[2] = (1*data.xf-myFunc.xf)/resolution;
           //console.log(data);
         }
       }
@@ -249,11 +249,11 @@ function updateFunction() {
             btn_next.hide();
           }
           console.log(data);
-          myFunc.slope = data.slope;
-          next_x[0] = data.x;
-          next_x[1] = data.xi;
-          next_s[0] = (data.x-myFunc.x)/resolution;
-          next_s[1] = (data.xi-myFunc.xi)/resolution;
+          myFunc.slope = 1*data.slope;
+          next_x[0] = 1*data.x;
+          next_x[1] = 1*data.xi;
+          next_s[0] = (1*data.x-myFunc.x)/resolution;
+          next_s[1] = (1*data.xi-myFunc.xi)/resolution;
           //console.log(data);
         }
       }

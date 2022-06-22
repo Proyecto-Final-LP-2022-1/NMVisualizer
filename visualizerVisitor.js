@@ -78,7 +78,14 @@ export default class visualizerVisitor extends matlabVisitor{
         if(ctx.postfix_expression() != null && ctx.expression() != null){
             //console.log(ctx.postfix_expression().primary_expression().IDENTIFIER().getText());
             //console.log(this.visitExpression(ctx.expression()));
-            this.simbTable[ctx.postfix_expression().primary_expression().IDENTIFIER().getText()] = this.visitExpression(ctx.expression());
+            // check if symbol not in table
+            if (!(this.simbTable.hasOwnProperty(ctx.postfix_expression().primary_expression().IDENTIFIER().getText()))) {
+                //console.log('first time '+ctx.postfix_expression().primary_expression().IDENTIFIER().getText());
+                this.simbTable[ctx.postfix_expression().primary_expression().IDENTIFIER().getText()] = [this.visitExpression(ctx.expression())];
+                //console.log(this.simbTable);
+            } else {
+                this.simbTable[ctx.postfix_expression().primary_expression().IDENTIFIER().getText()].push(this.visitExpression(ctx.expression()));
+            }
         }
     }
 
@@ -199,13 +206,13 @@ export default class visualizerVisitor extends matlabVisitor{
             return Function(ctx.primary_expression().getText(), "return Math."+ctx.array_expression().IDENTIFIER().getText()+"("+ctx.array_expression().primary_expression().getText()+") ;");
         }else if( ctx.IDENTIFIER().getText() != '@' && ctx.expression() == null){
             if(this.simbTable[ctx.IDENTIFIER().getText()] != null){
-                return this.simbTable[ctx.IDENTIFIER().getText()](this.visitPrimary_expression(ctx.primary_expression()));
+                return this.simbTable[ctx.IDENTIFIER().getText()][this.simbTable[ctx.IDENTIFIER().getText()].length-1](this.visitPrimary_expression(ctx.primary_expression()));
             }else{
                 console.log("Error semantico, la funcion con nombre: \"" + ctx.IDENTIFIER().getText() + "\" no ha sido declarada.\n");
             }
         }else if(ctx.IDENTIFIER().getText() != '@' && ctx.expression() != null && ctx.primary_expression() == null){
             if(this.simbTable[ctx.IDENTIFIER().getText()] != null){
-                return this.simbTable[ctx.IDENTIFIER().getText()](this.visitExpression(ctx.expression()));
+                return this.simbTable[ctx.IDENTIFIER().getText()][this.simbTable[ctx.IDENTIFIER().getText()].length-1](this.visitExpression(ctx.expression()));
             }else{
                 console.log("Error semantico, la funcion con nombre: \"" + ctx.IDENTIFIER().getText() + "\" no ha sido declarada.\n");
             }
@@ -228,7 +235,7 @@ export default class visualizerVisitor extends matlabVisitor{
                 }else if(this.simbTable[ctx.IDENTIFIER().getText()].toString() == 'false'){
                     return !(this.simbTable[ctx.IDENTIFIER().getText()].toString() === 'false');
                 }else{
-                    return parseFloat(this.simbTable[ctx.IDENTIFIER().getText()]);
+                    return parseFloat(this.simbTable[ctx.IDENTIFIER().getText()][this.simbTable[ctx.IDENTIFIER().getText()].length-1]);
                 }
             }else{
                 console.log("Error semantico, la variable con nombre: \"" + ctx.IDENTIFIER().getText() + "\" no ha sido declarada.\n");

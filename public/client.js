@@ -28,7 +28,7 @@ var tb = [0,0,0]; // text boxes
 function setup() {
   createCanvas(860, 640);
   background(20);
-  // noLoop();
+  //noLoop();
   labels[0] = 'xi';
   labels[1] = 'xf';
   labels[2] = 'epsilon';
@@ -148,7 +148,7 @@ function draw() {
       tb[1].html('x: '+next_x[0]);
       tb[2].html('xf: '+next_x[2]);
       if ((myFunc.x).toFixed(9) != (next_x[0]).toFixed(9)) {
-        myFunc.updatex(next_s);
+        myFunc.update(next_s);
       }
     } else {      
       fill(255,0,0);
@@ -165,11 +165,15 @@ function draw() {
       tb[0].html('xi: '+next_x[1]);
       tb[1].html('x: '+next_x[0]);
       if ((myFunc.x).toFixed(9) != (next_x[0]).toFixed(9)) {
-        myFunc.updatex(next_s);
+        myFunc.update(next_s);
       }
     }
   }
 }
+
+// function keyPressed() {
+//   redraw();
+// }
 
 function changeMode(){  
   alg = mode.value();
@@ -285,12 +289,13 @@ function updateFunctionNext() {
             done_msg.html('');                
             btn_next.show();
             btn_prev.show();
-          }          
-          myFunc.slope = 1*data.slope;
+          }
           next_x[0] = 1*data.x;
           next_x[1] = 1*data.xi;
+          next_x[2] = 1*data.slope;
           next_s[0] = (1*data.x-myFunc.x)/resolution;
           next_s[1] = (1*data.xi-myFunc.xi)/resolution;
+          next_s[2] = (1*data.slope-myFunc.slope)/resolution;
           //console.log(data);
         }
       }
@@ -357,11 +362,12 @@ function updateFunctionPrev() {
             btn_prev.show();
             btn_next.show();
           }                   
-          myFunc.slope = 1*data.slope;
           next_x[0] = 1*data.x;
           next_x[1] = 1*data.xi;
+          next_x[2] = 1*data.slope;
           next_s[0] = (1*data.x-myFunc.x)/resolution;
           next_s[1] = (1*data.xi-myFunc.xi)/resolution;
+          next_s[2] = (1*data.slope-myFunc.slope)/resolution;
           //console.log(data);
         }
       }
@@ -525,7 +531,7 @@ function setupFunction(){
             myFunc = new Newton(data.xs, data.ys, data.x, data.xi, data.slope);
             next_x[0] = data.x;
             next_x[1] = data.xi;
-            next_x[2] = data.xf;
+            next_x[2] = data.slope;
             offset = 0;
             zx = (width*0.96/(Math.max( ...data.xs )-Math.min( ...data.xs )));
             zy = (height*0.5/(Math.max( ...data.ys )-Math.min( ...data.ys )));
@@ -559,7 +565,7 @@ class Bisection {
     this.xf = xf;
   }
 
-  updatex(next_s){
+  update(next_s){
     this.x += next_s[0];
     this.xi += next_s[1];
     this.xf += next_s[2];
@@ -631,9 +637,10 @@ class Newton {
     this.slope = slope
   }
 
-  updatex(next_s){
+  update(next_s){
     this.x += next_s[0];
     this.xi += next_s[1];
+    this.slope += next_s[2];
   }
 
   draw(zx, zy, offset) {

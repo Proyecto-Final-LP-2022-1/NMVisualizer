@@ -658,7 +658,7 @@ class Newton {
     }
     endShape();
     stroke(0,0,255);
-    line(((this.x-(1*this.xs[0]))+((height)/(2*this.slope)))*zx,-(height/2)*zy,((this.x-(1*this.xs[0]))+((-height)/(2*this.slope)))*zx,(height/2)*zy);
+    line((-width-(1*this.xs[0]))*zx,-(this.slope*((-width-(1*this.xs[0]))-(this.x-(1*this.xs[0]))))*zy,(width-(1*this.xs[0]))*zx,-(this.slope*((width-(1*this.xs[0]))-(this.x-(1*this.xs[0]))))*zy);
     fill(255,0,0);
     stroke(255,0,0);
     ellipse((this.xi-(1*this.xs[0]))*zx, -(((this.xi-(1*this.xs[0]))-(this.x-(1*this.xs[0])))*this.slope)*zy, 5, 5);

@@ -39,6 +39,23 @@ var xs = []; // coordenadas x's de puntos para pintar la funcion
 var ys = []; // coordenadas y's de puntos para pintar la funcion
 var x; // punto medio, aproximacion de biseccion
 const resolution = 1000; // puntos que se generan para pintar la funcion
+const bisecAlg = 'x = (xi+xf)/2;\n'
+                +'while(((xf-xi)^ 2) ^ 0.5 > epsilon)\n'
+                +'  if( (f(xf) > 0) & (f(xi) < 0))\n'
+                +'    if(f(x) > 0)\n'
+                +'      xf = x;\n'
+                +'    else\n'
+                +'      xi = x;\n'
+                +'    end;\n'
+                +'  else\n'
+                +'    if(f(x) < 0)\n'
+                +'      xf = x;\n'
+                +'    else\n'
+                +'      xi = x;\n'
+                +'    end;\n'
+                +'  end;\n'
+                +'  x = (xi+xf)/2;\n'
+                +'end;'
 
 var steps = [];
 
@@ -71,7 +88,7 @@ app.get('/', (req, res) => {
 
 app.put('/bisection', (req, res) => {
     console.log('Data received:\n' + req.body.in);
-    input = req.body.in;
+    input = req.body.in + bisecAlg;
     chars = new antlr4.InputStream(input);
     lexer = new matlabLexer(chars);
     tokens = new antlr4.CommonTokenStream(lexer);
@@ -91,7 +108,7 @@ app.put('/bisection', (req, res) => {
         //console.log('i: '+i.toString());
         var x = (i*((xf-xi)/resolution)).toFixed(3);
         xs.push(x);
-        ys.push(f(x).toFixed(9));
+        ys.push(f(x).toFixed(18));
     }
     res.sendStatus(200); // respond to the client indicating everything was ok
 });

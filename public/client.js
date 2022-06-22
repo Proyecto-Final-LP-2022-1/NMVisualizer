@@ -9,7 +9,10 @@ let btn_start;
 let btn_reset;
 let txt_input;
 let code_input;
-let input;
+let xi_input;
+let xf_input;
+let epsilon_input;
+let function_input;
 let done_msg;
 
 // test buttons
@@ -27,37 +30,32 @@ function setup() {
 
   // noLoop();
 
-  txt_input = createElement('textarea','');
-  txt_input.attribute('name','input');
-  txt_input.attribute('cols','50');
-  txt_input.attribute('rows','10');
-  txt_input.position(width*0.05,height-150-65);
-  txt_input.value('xi_init = 0.0;\n'
-                  +'xf_init = 2.0;\n'
-                  +'xi = xi_init;\n'
-                  +'xf = xf_init;\n'
-                  +'epsilon = 0.00000000000001;\n'
-                  +'f = @(x) (-(x*x) + 2.0);\n'
-                  +'x = (xi+xf)/2;\n'
-                  +'while(((xf-xi)^ 2) ^ 0.5 > epsilon)\n'
-                  +'  if( (f(xf) > 0) & (f(xi) < 0))\n'
-                  +'    if(f(x) > 0)\n'
-                  +'      xf = x;\n'
-                  +'    else\n'
-                  +'      xi = x;\n'
-                  +'    end;\n'
-                  +'  else\n'
-                  +'    if(f(x) < 0)\n'
-                  +'      xf = x;\n'
-                  +'    else\n'
-                  +'      xi = x;\n'
-                  +'    end;\n'
-                  +'  end;\n'
-                  +'  x = (xi+xf)/2;\n'
-                  +'end;');
+  xi_input = createElement('input','');
+  xi_input.attribute('name','xi_input');
+  xi_input.attribute('required','');
+  xi_input.position(width*0.05, height-215);
+  xi_input.value('0.0');
+
+  xf_input = createElement('input','');
+  xf_input.attribute('name','xf_input');
+  xf_input.attribute('required','');
+  xf_input.position(width*0.05, height-215+25);
+  xf_input.value('2.0');
+
+  epsilon_input = createElement('input','');
+  epsilon_input.attribute('name','epsilon_input');
+  epsilon_input.attribute('required','');
+  epsilon_input.position(width*0.05, height-215+50);
+  epsilon_input.value('0.00000000000001');
+        
+  function_input = createElement('input','');
+  function_input.attribute('name','function_input');
+  function_input.attribute('required','');
+  function_input.position(width*0.05, height-215+75);
+  function_input.value('(-(x*x) + 2.0)');
 
   btn_start = createButton('Start');
-  btn_start.position(txt_input.x, txt_input.y + 120 + 40 );
+  btn_start.position(width*0.05, height-215+100);
   btn_start.mousePressed(setupFunction);
 
   btn_next = createButton('Next Step');
@@ -228,7 +226,10 @@ function resetFunc(){
         code_input.html('');
         code_input.size(1, 1);
         btn_start.show();
-        txt_input.show();
+        xi_input.show();
+        xf_input.show();
+        epsilon_input.show();
+        function_input.show();
         done_msg.html(''); 
         tb[0].html('');
         tb[1].html('');
@@ -276,11 +277,22 @@ function updateFunction() {
 }
 
 function setupFunction(){
-
+  if (isNaN(xi_input.value()) || isNaN(xf_input.value()) || isNaN(epsilon_input.value()) || function_input.value()===''
+    || xi_input.value()==='' || xf_input.value()==='' || epsilon_input.value()===''){
+    console.log('FILL ALL OUT FIELDS,\nNumbers only for xi, xf and epsilon');
+    done_msg.html('FILL ALL OUT FIELDS,\nNumbers only for xi, xf and epsilon');
+    return;
+  }
+  txt_input = 'xi_init = '+xi_input.value()+';\n'
+  +'xf_init = '+xf_input.value()+';\n'
+  +'xi = xi_init;\n'
+  +'xf = xf_init;\n'
+  +'epsilon = '+epsilon_input.value()+';\n'
+  +'f = @(x) '+function_input.value()+';\n'
   // put request, sends text input
   fetch('/bisection', {
     method: 'PUT',
-    body: JSON.stringify({in: txt_input.value()}),
+    body: JSON.stringify({in: txt_input}),
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json'
@@ -300,7 +312,11 @@ function setupFunction(){
             console.log(data.table);
             code_input.size(500, 150);
             code_input.html(JSON.stringify(data.table, null, '<br>'));
-            txt_input.hide();
+            done_msg.html('');
+            xi_input.hide();
+            xf_input.hide();
+            epsilon_input.hide();
+            function_input.hide();
             btn_start.hide();
             btn_next.show();
             btn_reset.show();

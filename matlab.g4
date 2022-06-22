@@ -27,7 +27,8 @@ index_expression_list
    ;
 
 array_expression
-   : IDENTIFIER '(' primary_expression ')' expression
+   : IDENTIFIER '(' primary_expression ')' array_expression
+   | IDENTIFIER '(' primary_expression ')' expression
    | IDENTIFIER '(' primary_expression ')'
    ;
 

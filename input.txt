@@ -1,9 +1,9 @@
-xi_init = 0.0;
-xf_init = 2.0;
+xi_init = 0.5;
+xf_init = 6.5;
 xi = xi_init;
 xf = xf_init;
-epsilon = 0.00000000000001;
-f = @(x) (-(x*x) + 2.0);
+epsilon = 0.000001;
+f = @(x) sin(x);
 x = (xi+xf)/2;
 while(((xf-xi)^ 2) ^ 0.5 > epsilon)
   if( (f(xf) > 0) & (f(xi) < 0))

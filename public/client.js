@@ -179,14 +179,12 @@ function changeMode(){
   alg = mode.value();
   if (alg === 'Bisection'){
     labels[1] = 'xf';
-    xi_input.value('0.0');
-    epsilon_input.value('0.00000000000001');
-    xf_input.value('2.0');
+    xi_input.value((1*xi_input.value())-(1*xf_input.value()));
+    xf_input.value((1*xi_input.value())+(2*xf_input.value()));
   } else {
     labels[1] = 'pad';
-    xi_input.value('2.0');
-    epsilon_input.value('0.00000000000001');
-    xf_input.value('2.0');
+    xf_input.value((1*xf_input.value()-1*xi_input.value())/2);
+    xi_input.value(1*xi_input.value()+1*xf_input.value());
   }  
 }
 
